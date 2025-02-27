@@ -1,0 +1,99 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  background: #f3f4f6;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Rest of the styles remain the same */
+.content {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  text-align: left;
+}
+
+.tag {
+  background: #eef2ff;
+  color: #2563eb;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.description {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.meta {
+  margin-bottom: 24px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.learnMore {
+  width: 100%;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.learnMore:hover {
+  background: #1d4ed8;
+}
