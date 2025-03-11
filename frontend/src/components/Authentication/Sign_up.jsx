@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "./Authentication.module.css";
+import Modal from "../profile setup/Modal";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const SignUp = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,13 +70,17 @@ const SignUp = () => {
       console.log("Sign up submitted with:", formData);
       // Here you would typically call your registration API
 
-      // Navigating to login page after successful registration
-      navigate("/login");
+      // Show welcome modal instead of redirecting
+      setShowModal(true);
     } catch (error) {
       console.error("Registration error:", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -152,10 +157,12 @@ const SignUp = () => {
           Already have an account?
           <Link to="/login" className={styles.textLink}>
             {" "}
-            Sign In
+            Log In
           </Link>
         </div>
       </form>
+
+      {showModal && <Modal onClose={handleCloseModal} />}
     </div>
   );
 };
