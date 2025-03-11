@@ -23,8 +23,7 @@ class RegisterView(generics.CreateAPIView):
         return Response({
             'user': {
                 'id': user.id,
-                'email': user.email,
-                'username': user.username,
+                 'username': user.username
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -67,8 +66,7 @@ class CreateProfileView(generics.CreateAPIView):
                 'location': profile.location,
                 'bio': profile.bio,
                 'interests': current_interests,
-                'membership_type': 'community',
-                'verified': profile.verified
+                'membership_type': 'community'
             }
         }, status=status.HTTP_201_CREATED)
 
