@@ -10,13 +10,12 @@ User = get_user_model()
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
-    full_name = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'password2')
+        fields = ('username', 'password', 'password2')
         extra_kwargs = {
-            'email': {'required': True}
+            'username': {'required': True},
         }
 
     def validate(self, attrs):
@@ -25,15 +24,11 @@ class UserSignupSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password2')
-        full_name = validated_data.pop('full_name')
-        user = User.objects.create_user(**validated_data)
-
-        # Update profile full name
-        profile = Profile.objects.get(user=user)
-        profile.full_name = full_name
-        profile.save()
-
+        validated_data.pop('password2')  # Remove password2 before creating user
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password']
+        )
         return user
 
 
@@ -46,7 +41,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('full_name', 'phone_number', 'location', 'bio', 'interests')
+        fields = ('full_name', 'phone_number', 'location', 'bio', 'interests', 'created_at')
 
     def create(self, validated_data):
         # Pop interests data before creating profile
@@ -68,8 +63,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         Membership.objects.create(
             profile=profile,
             membership_type='community',
-            is_approved=True,
-            notes='Initial membership on signup'
+            is_approved=True
         )
 
         return profile
@@ -116,11 +110,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('email', 'username', 'full_name', 'bio', 'verified',
+        fields = ('email', 'username', 'full_name', 'bio',
                   'phone_number', 'location', 'current_membership',
                   'pending_membership_request', 'membership_history',
                   'current_interests', 'interests')
-        read_only_fields = ('verified',)
 
     def update(self, instance, validated_data):
         interests_data = validated_data.pop('interests', None)

@@ -1,4 +1,5 @@
 import styles from "./Hero.module.css";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -9,8 +10,12 @@ const Hero = () => {
         and ecological creative economy
       </p>
       <div className={styles.buttonGroup}>
-        <button className={styles.joinButton}>Join Us</button>
-        <button className={styles.loginButton}>Log In</button>
+        <Link to="/join" className={styles.joinButton}>
+          Join Us
+        </Link>
+        <Link to="/login" className={styles.loginButton}>
+          Log In
+        </Link>
       </div>
     </div>
   );

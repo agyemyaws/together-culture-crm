@@ -1,0 +1,235 @@
+.pageContainer {
+  padding: 2rem 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.infoMessage {
+  color: #4b5563;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  text-align: left;
+}
+
+.profileContainer {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.formSection {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.sectionDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #444444;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+.textInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.inputError {
+  border-color: #ef4444;
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.textInput:focus,
+.textArea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.textArea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #111827;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.interestsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.interestOption {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.interestOption:hover {
+  border-color: #6b7280;
+  background-color: #f9fafb;
+}
+
+.interestOption.selected {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.interestContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.interestIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.interestOption.selected .interestIcon {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.interestDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.interestTitle {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #111827;
+  margin: 0;
+}
+
+.interestDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+}
+
+.formActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  text-align: center;
+}
+
+.submitButton:hover {
+  background-color: #1d4ed8;
+}
+
+.submitButton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .profileContainer {
+    padding: 1.5rem;
+  }
+
+  .interestContent {
+    gap: 0.75rem;
+  }
+
+  .interestIcon {
+    width: 32px;
+    height: 32px;
+  }
+}

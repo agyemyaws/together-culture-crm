@@ -9,24 +9,39 @@ from .serializers import (
     MembershipSerializer,
     MembershipRequestSerializer
 )
+from django.db import IntegrityError
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSignupSerializer
     permission_classes = (AllowAny,)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
 
-
-        return Response({
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'username': user.username,
-            }
-        }, status=status.HTTP_201_CREATED)
+            return Response({
+                'user': {
+                    'id': user.id,
+                    'username': user.username
+                }
+            }, status=status.HTTP_201_CREATED)
+        except IntegrityError as e:
+            logger.error(f"Registration error: {str(e)}")
+            return Response(
+                {"detail": "Registration failed. Please try a different username."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error during registration: {str(e)}")
+            return Response(
+                {"detail": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CreateProfileView(generics.CreateAPIView):
@@ -67,8 +82,7 @@ class CreateProfileView(generics.CreateAPIView):
                 'location': profile.location,
                 'bio': profile.bio,
                 'interests': current_interests,
-                'membership_type': 'community',
-                'verified': profile.verified
+                'membership_type': 'community'
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -77,7 +91,24 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
-        return self.request.user.profile()
+        try:
+            return Profile.objects.get(user=self.request.user)
+        except Profile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            profile = self.get_object()
+            if isinstance(profile, Response):  # If no profile exists
+                return profile
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error retrieving profile: {str(e)}")
+            return Response(
+                {"detail": "Error retrieving profile"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class MembershipRequestView(generics.CreateAPIView):
