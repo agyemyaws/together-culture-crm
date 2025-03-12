@@ -1,48 +1,51 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./CompleteProfile.module.css";
+import api from '../../api';
 
 const CompleteProfile = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    phoneNumber: "",
+    full_name: "",
+    bio: "",
+    phone_number: "",
     location: "",
     interests: [],
-    bio: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formValidated, setFormValidated] = useState(false);
+  const [error, setError] = useState("");
 
   const interestOptions = [
     {
-      id: "caring",
+      value: "caring",
       label: "Caring",
       description: "Supporting and nurturing community growth",
     },
     {
-      id: "sharing",
+      value: "sharing",
       label: "Sharing",
       description: "Exchanging knowledge and resources",
     },
     {
-      id: "creating",
+      value: "creating",
       label: "Creating",
       description: "Making and designing new things",
     },
     {
-      id: "experiencing",
+      value: "experiencing",
       label: "Experiencing",
       description: "Exploring and discovering opportunities",
     },
     {
-      id: "working",
+      value: "working",
       label: "Working",
       description: "Professional development and collaboration",
     },
   ];
 
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -98,9 +101,9 @@ const CompleteProfile = () => {
     const newErrors = {};
     let isValid = true;
 
-    // Validate fullName
-    if (!data.fullName.trim()) {
-      newErrors.fullName = "Full name is required";
+    // Validate full_name (changed from fullName)
+    if (!data.full_name?.trim()) {
+      newErrors.full_name = "Full name is required";
       isValid = false;
     }
 
@@ -123,27 +126,23 @@ const CompleteProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form before submission
+    
+    // Validate form before submitting
     if (!validateForm()) {
-      // Scroll to the top where errors might be displayed
-      window.scrollTo(0, 0);
       return;
     }
 
     setIsSubmitting(true);
+    setError("");
 
     try {
-      // Simulating API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Profile completed with:", formData);
-      // Here you would typically call your API to save the profile data
-
-      setIsSubmitting(false);
-      // The Link component will handle navigation to dashboard
+      await api.post('/auth/profile/create/', formData);
+      // Navigate to dashboard on success
+      window.location.href = '/dashboard';
     } catch (error) {
-      console.error("Profile submission error:", error);
+      console.error('Error creating profile:', error);
+      setError(error.response?.data?.detail || 'Failed to create profile. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -159,35 +158,35 @@ const CompleteProfile = () => {
             <h2 className={styles.sectionTitle}>Personal Information</h2>
 
             <div className={styles.formGroup}>
-              <label htmlFor="fullName" className={styles.formLabel}>
+              <label htmlFor="full_name" className={styles.formLabel}>
                 Full Name
               </label>
               <input
                 type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
+                id="full_name"
+                name="full_name"
+                value={formData.full_name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
                 className={`${styles.textInput} ${
-                  errors.fullName ? styles.inputError : ""
+                  errors.full_name ? styles.inputError : ""
                 }`}
                 required
               />
-              {errors.fullName && (
-                <p className={styles.errorText}>{errors.fullName}</p>
+              {errors.full_name && (
+                <p className={styles.errorText}>{errors.full_name}</p>
               )}
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="phoneNumber" className={styles.formLabel}>
+              <label htmlFor="phone_number" className={styles.formLabel}>
                 Phone Number
               </label>
               <input
                 type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                id="phone_number"
+                name="phone_number"
+                value={formData.phone_number}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
                 className={styles.textInput}
@@ -222,17 +221,17 @@ const CompleteProfile = () => {
             <div className={styles.interestsList}>
               {interestOptions.map((interest) => (
                 <div
-                  key={interest.id}
+                  key={interest.value}
                   className={`${styles.interestOption} ${
-                    formData.interests.includes(interest.id)
+                    formData.interests.includes(interest.value)
                       ? styles.selected
                       : ""
                   }`}
-                  onClick={() => handleInterestToggle(interest.id)}
+                  onClick={() => handleInterestToggle(interest.value)}
                 >
                   <div className={styles.interestContent}>
                     <div className={styles.interestIcon}>
-                      {interest.id === "caring" && (
+                      {interest.value === "caring" && (
                         <svg
                           width="24"
                           height="24"
@@ -246,7 +245,7 @@ const CompleteProfile = () => {
                           />
                         </svg>
                       )}
-                      {interest.id === "sharing" && (
+                      {interest.value === "sharing" && (
                         <svg
                           width="24"
                           height="24"
@@ -263,7 +262,7 @@ const CompleteProfile = () => {
                           />
                         </svg>
                       )}
-                      {interest.id === "creating" && (
+                      {interest.value === "creating" && (
                         <svg
                           width="24"
                           height="24"
@@ -294,7 +293,7 @@ const CompleteProfile = () => {
                           />
                         </svg>
                       )}
-                      {interest.id === "experiencing" && (
+                      {interest.value === "experiencing" && (
                         <svg
                           width="24"
                           height="24"
@@ -325,7 +324,7 @@ const CompleteProfile = () => {
                           />
                         </svg>
                       )}
-                      {interest.id === "working" && (
+                      {interest.value === "working" && (
                         <svg
                           width="24"
                           height="24"
@@ -358,7 +357,7 @@ const CompleteProfile = () => {
                     </div>
                   </div>
                   <div className={styles.checkmark}>
-                    {formData.interests.includes(interest.id) && (
+                    {formData.interests.includes(interest.value) && (
                       <svg
                         width="20"
                         height="20"
@@ -401,21 +400,14 @@ const CompleteProfile = () => {
           </section>
 
           <div className={styles.formActions}>
-            {!isSubmitting ? (
-              formValidated ? (
-                <Link to="/dashboard" className={styles.submitButton}>
-                  Complete Profile
-                </Link>
-              ) : (
-                <button type="submit" className={styles.submitButton}>
-                  Complete Profile
-                </button>
-              )
-            ) : (
-              <button type="submit" className={styles.submitButton} disabled>
-                Completing Profile...
-              </button>
-            )}
+            <button 
+              type="submit" 
+              className={styles.submitButton}
+              disabled={isSubmitting || !formValidated}
+            >
+              {isSubmitting ? 'Completing Profile...' : 'Complete Profile'}
+            </button>
+            {error && <p className={styles.errorText}>{error}</p>}
           </div>
         </form>
       </div>

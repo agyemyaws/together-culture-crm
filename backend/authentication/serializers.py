@@ -14,6 +14,9 @@ class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'password2')
+        extra_kwargs = {
+            'username': {'required': True},
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -21,8 +24,11 @@ class UserSignupSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password2')
-        user = User.objects.create_user(**validated_data)
+        validated_data.pop('password2')  # Remove password2 before creating user
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password']
+        )
         return user
 
 

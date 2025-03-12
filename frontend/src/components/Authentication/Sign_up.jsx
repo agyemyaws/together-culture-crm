@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Authentication.module.css";
-import Modal from "../profile setup/Modal";
+import api from "../../api";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    confirmPassword: "",
+    password2: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,8 +47,8 @@ const SignUp = () => {
     }
 
     // Validate confirm password
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+    if (formData.password !== formData.password2) {
+      newErrors.password2 = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -56,31 +57,53 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
     setIsSubmitting(true);
+    setError('');
 
     try {
-      // Simulating API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await api.post('/auth/register/', {
+        username: formData.username,
+        password: formData.password,
+        password2: formData.password2,
+      });
 
-      console.log("Sign up submitted with:", formData);
-      // Here you would typically call your registration API
-
-      // Show welcome modal instead of redirecting
-      setShowModal(true);
+      if (response.data) {
+        // Show success message (optional)
+        alert('Registration successful! Please login.');
+        // Navigate to login page
+        navigate('/login');
+      }
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error('Signup error:', error);
+      
+      // Handle specific error messages from the backend
+      if (error.response?.data) {
+        // Handle password-specific errors
+        if (error.response.data.password) {
+          setError(error.response.data.password[0]);
+        }
+        // Handle username-specific errors
+        else if (error.response.data.username) {
+          setError(error.response.data.username[0]);
+        }
+        // Handle non-field errors
+        else if (error.response.data.non_field_errors) {
+          setError(error.response.data.non_field_errors[0]);
+        }
+        // Handle detail message
+        else if (error.response.data.detail) {
+          setError(error.response.data.detail);
+        }
+        // If we get an unexpected error format, show the raw message
+        else {
+          setError(JSON.stringify(error.response.data));
+        }
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
   };
 
   return (
@@ -88,6 +111,10 @@ const SignUp = () => {
       <h1 className={styles.title}>Sign up</h1>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        {error && (
+          <p className={styles.errorText}>{error}</p>
+        )}
+
         <div className={styles.inputGroup}>
           <label htmlFor="username" className={styles.inputLabel}>
             Username
@@ -96,7 +123,9 @@ const SignUp = () => {
             type="text"
             id="username"
             name="username"
-            className={styles.input}
+            className={`${styles.input} ${
+              errors.username ? styles.inputError : ""
+            }`}
             placeholder="Enter your username"
             value={formData.username}
             onChange={handleChange}
@@ -115,7 +144,9 @@ const SignUp = () => {
             type="password"
             id="password"
             name="password"
-            className={styles.input}
+            className={`${styles.input} ${
+              errors.password ? styles.inputError : ""
+            }`}
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
@@ -127,21 +158,23 @@ const SignUp = () => {
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="confirmPassword" className={styles.inputLabel}>
+          <label htmlFor="password2" className={styles.inputLabel}>
             Confirm Password
           </label>
           <input
             type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            className={styles.input}
+            id="password2"
+            name="password2"
+            className={`${styles.input} ${
+              errors.password2 ? styles.inputError : ""
+            }`}
             placeholder="Confirm your password"
-            value={formData.confirmPassword}
+            value={formData.password2}
             onChange={handleChange}
             required
           />
-          {errors.confirmPassword && (
-            <p className={styles.errorText}>{errors.confirmPassword}</p>
+          {errors.password2 && (
+            <p className={styles.errorText}>{errors.password2}</p>
           )}
         </div>
 
@@ -161,8 +194,6 @@ const SignUp = () => {
           </Link>
         </div>
       </form>
-
-      {showModal && <Modal onClose={handleCloseModal} />}
     </div>
   );
 };

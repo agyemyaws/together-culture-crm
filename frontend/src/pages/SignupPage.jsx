@@ -5,7 +5,7 @@ const SignUpPage = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.formWrapper}>
-        <SignUp />
+        <SignUp route={"/auth/register"} method={"register"} />
       </div>
     </div>
   );

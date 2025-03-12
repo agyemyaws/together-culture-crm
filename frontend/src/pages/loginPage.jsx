@@ -5,7 +5,7 @@ const LoginPage = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.formWrapper}>
-        <SignIn />
+        <SignIn route={"/auth/token"} method={"login"} />
       </div>
     </div>
   );

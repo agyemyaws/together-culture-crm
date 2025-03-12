@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Authentication.module.css";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
+import api from "../../api";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,21 +22,39 @@ const SignIn = () => {
     });
   };
 
+  const checkProfileStatus = async () => {
+    try {
+      const response = await api.get("/auth/profile/");
+      return response.data;
+    } catch (error) {
+      // If we get a 404, it means no profile exists
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
     try {
-      // Simulating API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await api.post("/auth/token/", {
+        username: formData.username,
+        password: formData.password,
+      });
 
-      console.log("Login submitted with:", formData);
-      // Here you would typically call your authentication API
-
-      // Navigating to dashboard after successful login
-      navigate("/dashboard");
+      localStorage.setItem(ACCESS_TOKEN, response.data.access);
+      localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+      
+      navigate("/dashboard"); // Always navigate to dashboard
     } catch (error) {
       console.error("Login error:", error);
+      setError(
+        error.response?.data?.detail || "An error occurred during login"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -44,6 +65,8 @@ const SignIn = () => {
       <h1 className={styles.title}>Sign in</h1>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        {error && <p className={styles.errorText}>{error}</p>}
+        
         <div className={styles.inputGroup}>
           <label htmlFor="username" className={styles.inputLabel}>
             Username
@@ -54,7 +77,7 @@ const SignIn = () => {
             name="username"
             className={styles.input}
             placeholder="Enter your username"
-            value={formData.email}
+            value={formData.username}
             onChange={handleChange}
             required
           />
