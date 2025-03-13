@@ -69,7 +69,7 @@ const SignUp = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/register/", // Replace with your backend URL
+        "http://localhost:8000/api/register/",
         {
           email: formData.email,
           password: formData.password,
@@ -79,9 +79,8 @@ const SignUp = () => {
       );
 
       console.log("Sign up successful:", response.data);
-      setShowModal(true); // Show a modal, then redirect to profile creation
-
-      // Optionally auto-login after signup
+      setShowModal(true);
+      
       const loginResponse = await axios.post(
         "http://localhost:8000/api/token/",
         {
@@ -108,7 +107,7 @@ const SignUp = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    navigate("/profile/create"); // Redirect to profile creation after closing modal
+    navigate("/profile/create");
   };
 
   return (

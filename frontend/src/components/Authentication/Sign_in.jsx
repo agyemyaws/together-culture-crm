@@ -27,19 +27,19 @@ const SignIn = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/token/", // Replace with your backend URL
+        "http://localhost:8000/api/token/", 
         {
           email: formData.email,
           password: formData.password,
         }
       );
 
-      // Store tokens in localStorage
+      
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
 
       console.log("Login successful:", response.data);
-      navigate("/dashboard"); // Adjust to your desired route
+      navigate("/dashboard"); 
     } catch (error) {
       console.error("Login error:", error);
       setError(
