@@ -31,28 +31,29 @@
   justify-content: center;
 }
 
-.joinButton {
-  background: white;
-  color: #2563eb;
-  border: none;
+.joinButton,
+.loginButton {
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.joinButton {
+  background: white;
+  color: #2563eb;
+  border: none;
 }
 
 .loginButton {
   background: transparent;
   color: white;
   border: 1px solid white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .joinButton:hover {
