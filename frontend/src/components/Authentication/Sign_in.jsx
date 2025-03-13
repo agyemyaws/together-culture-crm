@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import styles from "./Authentication.module.css";
 
 const SignIn = () => {
@@ -7,7 +8,7 @@ const SignIn = () => {
     email: "",
     password: "",
   });
-
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -22,18 +23,28 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
     try {
-      // Simulating API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await axios.post(
+        "http://localhost:8000/api/token/", // Replace with your backend URL
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
 
-      console.log("Login submitted with:", formData);
-      // Here you would typically call your authentication API
+      // Store tokens in localStorage
+      localStorage.setItem("access_token", response.data.access);
+      localStorage.setItem("refresh_token", response.data.refresh);
 
-      // Navigating to dashboard after successful login
-      navigate("/dashboard");
+      console.log("Login successful:", response.data);
+      navigate("/dashboard"); // Adjust to your desired route
     } catch (error) {
       console.error("Login error:", error);
+      setError(
+        error.response?.data?.detail || "Invalid credentials, please try again"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -43,17 +54,19 @@ const SignIn = () => {
     <div className={styles.formContainer}>
       <h1 className={styles.title}>Sign in</h1>
 
+      {error && <p className={styles.errorText}>{error}</p>}
+
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
-          <label htmlFor="username" className={styles.inputLabel}>
-            Username
+          <label htmlFor="email" className={styles.inputLabel}>
+            Email
           </label>
           <input
-            type="text"
-            id="username"
-            name="username"
+            type="email"
+            id="email"
+            name="email"
             className={styles.input}
-            placeholder="Enter your username"
+            placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
             required
