@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
 
   const menuItems = [
@@ -152,8 +152,14 @@ const Sidebar = () => {
     }
   };
 
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className={styles.sidebar}>
+    <div className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
       <div className={styles.logo}>
         <h2 className={styles.logoBlue}>Together Culture</h2>
       </div>
@@ -165,11 +171,31 @@ const Sidebar = () => {
             className={`${styles.navItem} ${
               location.pathname === item.path ? styles.active : ""
             }`}
+            onClick={handleLinkClick}
           >
             <span className={styles.icon}>{renderIcon(item.path)}</span>
             <span className={styles.label}>{item.label}</span>
           </Link>
         ))}
+
+        <button className={styles.signOutButton}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Sign Out
+        </button>
       </nav>
     </div>
   );
