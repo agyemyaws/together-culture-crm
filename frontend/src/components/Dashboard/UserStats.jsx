@@ -96,7 +96,11 @@ const UserStats = () => {
     <div className={styles.card}>
       <div className={styles.statsGrid}>
         {stats.map((stat) => (
-          <div key={stat.id} className={styles.statCard}>
+          <div
+            key={stat.id}
+            className={styles.statCard}
+            style={{ textAlign: "left" }}
+          >
             <div className={styles.statLabel}>{stat.label}</div>
             <div className={styles.statValue}>
               {stat.hasIcon && renderIcon(stat.id)}

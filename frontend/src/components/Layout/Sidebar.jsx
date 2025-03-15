@@ -155,10 +155,7 @@ const Sidebar = () => {
   return (
     <div className={styles.sidebar}>
       <div className={styles.logo}>
-        <h2>
-          <span style={{ color: "#0066ff" }}>Together</span>
-          <span>Culture</span>
-        </h2>
+        <h2 className={styles.logoBlue}>Together Culture</h2>
       </div>
       <nav className={styles.navigation}>
         {menuItems.map((item) => (

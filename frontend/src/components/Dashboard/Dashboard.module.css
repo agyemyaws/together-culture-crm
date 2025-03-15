@@ -35,7 +35,7 @@
 }
 
 .dashboardHeader h1 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 600;
   margin: 0;
   color: #111827;
@@ -44,7 +44,7 @@
 .subtitle {
   color: #6b7280;
   margin-top: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .dashboardGrid {
@@ -103,18 +103,21 @@
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   padding: 1rem;
+  text-align: left;
 }
 
 .statLabel {
   font-size: 0.875rem;
   color: #6b7280;
   margin-bottom: 0.5rem;
+  text-align: left;
 }
 
 .statValue {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-align: left;
 }
 
 .statNumber {
@@ -248,6 +251,7 @@
   font-size: 0.75rem;
   color: #6b7280;
   margin-top: 0.25rem;
+  text-align: left;
 }
 
 .quickActionsContainer {
