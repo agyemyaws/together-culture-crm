@@ -1,31 +1,18 @@
 .layout {
-  min-height: 100vh;
   display: flex;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .mainContent {
   flex: 1;
-  margin-left: 250px; /* Same as sidebar width */
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  overflow-y: auto;
+  margin-left: 260px; /* Equal to the width of the sidebar */
 }
 
 .main {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 1.5rem;
 }
-
-.navbar {
-  /* Add your navbar styles */
-  padding: 1rem;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.footer {
-  /* Add your footer styles */
-  padding: 1rem;
-  background-color: #f5f5f5;
-  text-align: center;
-} 

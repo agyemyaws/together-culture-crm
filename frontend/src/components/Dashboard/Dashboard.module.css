@@ -1,59 +1,296 @@
 .dashboardContainer {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .dashboardHeader {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
 .dashboardHeader h1 {
-  font-size: 2rem;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
 }
 
 .subtitle {
-  color: #666;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
 }
 
 .dashboardGrid {
   display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
-.dashboardMain {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+@media (min-width: 768px) {
+  .dashboardGrid {
+    grid-template-columns: 2fr 1fr;
+  }
 }
 
-.userStatsContainer {
-  background: white;
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.viewAllLink {
+  color: #0066ff;
+  font-size: 0.875rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .statCard {
-  background: #f8f9fa;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
   padding: 1rem;
-  border-radius: 6px;
-  text-align: center;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .statNumber {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #0066cc;
-  margin: 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
 }
 
-/* Add more styles as needed */ 
+.statMeta {
+  font-size: 0.75rem;
+  color: #0066ff;
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.eventItem {
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.eventItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.eventIcon {
+  background-color: #e6f0ff;
+  color: #0066ff;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eventInfo {
+  flex: 1;
+  text-align: left;
+}
+
+.eventTitle {
+  font-weight: 500;
+  margin: 0;
+}
+
+.eventMeta {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
+}
+
+.eventLocation {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.eventTag {
+  display: inline-block;
+  background-color: #e6f0ff;
+  color: #0066ff;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  margin-top: 0.25rem;
+}
+
+.eventAction {
+  background-color: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.activityItem {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.activityItem:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.activityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.activityTitle {
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activityType {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.progressBar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #0066ff;
+  border-radius: 0.25rem;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.quickActionsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.actionButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: #e6f0ff;
+}
+
+.actionIcon {
+  color: #0066ff;
+  margin-bottom: 0.5rem;
+}
+
+.actionLabel {
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.benefitDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #fbbf24;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.upgradeButton {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  border: 1px solid #0066ff;
+  background-color: white;
+  color: #0066ff;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upgradeButton:hover {
+  background-color: #e6f0ff;
+}
