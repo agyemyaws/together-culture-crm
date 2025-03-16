@@ -1,0 +1,325 @@
+.eventsContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  
+  .sectionTitle {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  
+  /* Search and Filters */
+  .filterSection {
+    margin-bottom: 32px;
+  }
+  
+  .searchContainer {
+    margin-bottom: 16px;
+  }
+  
+  .searchInput {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .searchInput:focus {
+    border-color: #2563eb;
+  }
+  
+  .filtersRow {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  
+  .filterSelect {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    background-color: white;
+    transition: border-color 0.2s;
+    color: #333;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+  }
+  
+  .filterSelect:focus {
+    border-color: #2563eb;
+  }
+  
+  .moreFiltersButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .moreFiltersButton:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+  }
+  
+  .filterIcon {
+    font-size: 18px;
+  }
+  
+  .advancedFilters {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  
+  .dateFilter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .dateFilter label {
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  .dateInput {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  
+  /* Events List */
+  .eventsList {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .eventCard {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .eventCard:hover {
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .eventHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  
+  .eventTags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .eventTypeTag {
+    background-color: #eff6ff;
+    color: #2563eb;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .tag {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+  
+  .eventTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+  
+  .eventDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .eventDetail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5563;
+  }
+  
+  .detailIcon {
+    font-size: 18px;
+  }
+  
+  .attendeesList {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .attendeeCircle {
+    width: 32px;
+    height: 32px;
+    background-color: #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 14px;
+  }
+  
+  .attendeeCircle:last-child {
+    width: auto;
+    height: 32px;
+    background-color: transparent;
+    font-size: 14px;
+    color: #6b7280;
+    padding-left: 4px;
+  }
+  
+  .eventActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  
+  .detailsButton {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 0;
+  }
+  
+  .detailsArrow {
+    font-size: 12px;
+  }
+  
+  .registerButton {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .registerButton:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .loadMoreButton {
+    background-color: white;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 24px auto 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .loadMoreButton:hover {
+    background-color: #eff6ff;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 18px;
+  }
+  
+  .noEvents {
+    text-align: center;
+    padding: 60px 0;
+    color: #6b7280;
+    font-size: 18px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .sectionTitle {
+      font-size: 28px;
+    }
+    
+    .filtersRow {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .filterSelect {
+      min-width: auto;
+    }
+    
+    .eventTitle {
+      font-size: 20px;
+    }
+    
+    .eventActions {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+    
+    .detailsButton {
+      margin-bottom: 8px;
+    }
+  }
