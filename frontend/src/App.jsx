@@ -5,6 +5,7 @@ import LoginPage from "./pages/loginPage";
 import SignupPage from "./pages/SignupPage";
 import CompleteProfilePage from "./pages/completeProfilePage";
 import DashboardPage from './pages/DashboardPage';
+import EventsPage from './pages/EventsPage';
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function Logout() {
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/events" element={<EventsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/join" element={<SignupPage />} />
         <Route path="/logout" element={<Logout />} />
