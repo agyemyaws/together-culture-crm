@@ -13,9 +13,9 @@ const Navbar = () => {
         <Link to="/events" className={styles.navLink}>
           Events
         </Link>
-        <a href="#join" className={styles.navLink}>
+        <Link to="/benefits" className={styles.navLink}>
           Why Join
-        </a>
+        </Link>
         <Link to="/login" className={styles.navLink}>
           Log In
         </Link>
