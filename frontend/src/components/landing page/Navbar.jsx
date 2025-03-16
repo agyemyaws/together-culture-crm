@@ -1,21 +1,27 @@
+import React from "react";
+import { Link } from "react-router-dom";
 import styles from "./Navbar.module.css";
 
 const Navbar = () => {
   return (
     <div className={styles.container}>
-      <a href="/" className={styles.logo}>
+      <Link to="/" className={styles.logo}>
         Together Culture
-      </a>
+      </Link>
+  
       <nav className={styles.nav}>
-        <a href="#events" className={styles.navLink}>
+        <Link to="/events" className={styles.navLink}>
           Events
-        </a>
+        </Link>
         <a href="#join" className={styles.navLink}>
           Why Join
         </a>
-        <a href="#login" className={styles.navLink}>
+        <Link to="/login" className={styles.navLink}>
           Log In
-        </a>
+        </Link>
+        <Link to="/landingPage" className={styles.navLink}>
+          Home
+        </Link>
       </nav>
     </div>
   );

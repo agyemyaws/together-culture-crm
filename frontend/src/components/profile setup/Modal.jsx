@@ -25,7 +25,7 @@ const Modal = () => {
                 className={styles.completeProfileButton}
                 onClick={() => setShowForm(true)}
               >
-                Complete Your Profile
+                Complete Your Profile!
               </button>
             </div>
           </>
