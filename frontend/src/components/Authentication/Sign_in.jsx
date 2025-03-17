@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Authentication.module.css";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
+import { useUser } from "../../context/UserContext";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { updateUser } = useUser();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,16 +24,20 @@ const SignIn = () => {
     });
   };
 
-  const checkProfileStatus = async () => {
+  const fetchUserProfile = async () => {
     try {
       const response = await api.get("/auth/profile/");
-      return response.data;
+      const userData = {
+        firstName: response.data.first_name || response.data.username,
+        lastName: response.data.last_name || '',
+        role: response.data.role || 'Member',
+        membership: response.data.membership_type || 'Basic'
+      };
+      updateUser(userData);
+      return userData;
     } catch (error) {
-      // If we get a 404, it means no profile exists
-      if (error.response?.status === 404) {
-        return null;
-      }
-      throw error;
+      console.error("Error fetching user profile:", error);
+      return null;
     }
   };
 
@@ -41,15 +47,21 @@ const SignIn = () => {
     setError("");
 
     try {
+      // Login request
       const response = await api.post("/auth/token/", {
         username: formData.username,
         password: formData.password,
       });
 
+      // Store tokens
       localStorage.setItem(ACCESS_TOKEN, response.data.access);
       localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+
+      // Fetch and store user data
+      await fetchUserProfile();
       
-      navigate("/dashboard"); // Always navigate to dashboard
+      // Navigate to dashboard
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       setError(

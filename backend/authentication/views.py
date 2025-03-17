@@ -144,12 +144,6 @@ class MembershipHistoryView(generics.ListAPIView):
         return Membership.objects.filter(profile=self.request.user.profile())
 
 
-class AdminUserProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = ProfileSerializer
-    permission_classes = (IsAdminUser,)
-    queryset = Profile.objects.all()
-
-
 class PendingMembershipRequestsView(generics.ListAPIView):
     serializer_class = MembershipSerializer
     permission_classes = (IsAdminUser,)

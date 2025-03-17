@@ -9,7 +9,6 @@ from authentication.views import (
     MembershipRequestView,
     MembershipApprovalView,
     MembershipHistoryView,
-    AdminUserProfileView,
     PendingMembershipRequestsView, CreateProfileView,
 )
 
@@ -23,7 +22,6 @@ urlpatterns = [
 
     path('profile/create/', CreateProfileView.as_view(), name='create-profile'),
     path('profile/', ProfileView.as_view(), name='profile'),
-    path('profile/<int:pk>/', AdminUserProfileView.as_view(), name='admin-profile'),
 
     # Membership URLs
     path('membership/request/', MembershipRequestView.as_view(), name='request-membership'),
