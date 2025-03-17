@@ -1,6 +1,8 @@
 .container {
-  padding: 40px 0;
+  padding: 40px 20px;
   text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .title {
@@ -14,17 +16,27 @@
   font-size: 20px;
   color: #666;
   margin-bottom: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 24px;
   margin-bottom: 32px;
+  justify-items: center;
+  align-items: stretch;
 }
 
 @media (max-width: 768px) {
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(280px, 1fr);
+    padding: 0 10px;
+  }
+  
+  .container {
+    padding: 40px 10px;
   }
 }

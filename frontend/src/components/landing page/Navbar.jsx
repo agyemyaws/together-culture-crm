@@ -10,17 +10,14 @@ const Navbar = () => {
       </Link>
   
       <nav className={styles.nav}>
-        <Link to="/events" className={styles.navLink}>
-          Events
-        </Link>
         <a href="#join" className={styles.navLink}>
           Why Join
         </a>
+        <Link to="/events" className={styles.navLink}>
+          Events
+        </Link>
         <Link to="/login" className={styles.navLink}>
           Log In
-        </Link>
-        <Link to="/landingPage" className={styles.navLink}>
-          Home
         </Link>
       </nav>
     </div>

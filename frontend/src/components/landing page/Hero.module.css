@@ -6,7 +6,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 40px 0px;
+  margin: 40px auto;
+  max-width: 1200px;
+  width: 90%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -66,8 +68,9 @@
 
 @media (max-width: 768px) {
   .container {
-    margin: 20px;
+    margin: 20px auto;
     padding: 40px 20px;
+    width: 95%;
   }
 
   .title {
