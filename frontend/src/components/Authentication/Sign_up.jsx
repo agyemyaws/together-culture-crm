@@ -60,38 +60,32 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) {
       return;
     }
-
+  
     setIsSubmitting(true);
-
+  
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      password2: formData.password2,
+      full_name: formData.full_name,
+    };
+  
+  
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/register/",
-        {
-          email: formData.email,
-          password: formData.password,
-          password2: formData.password2,
-          full_name: formData.full_name,
-        }
+        "http://localhost:8000/auth/register/",
+        payload
       );
-
+      localStorage.setItem("access_token", response.data.access);
+      localStorage.setItem("refresh_token", response.data.refresh);
       console.log("Sign up successful:", response.data);
       setShowModal(true);
-      
-      const loginResponse = await axios.post(
-        "http://localhost:8000/api/token/",
-        {
-          email: formData.email,
-          password: formData.password,
-        }
-      );
-      localStorage.setItem("access_token", loginResponse.data.access);
-      localStorage.setItem("refresh_token", loginResponse.data.refresh);
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error("Registration error:", error.response?.data || error.message);
       setErrors({
         ...errors,
         server:
@@ -104,10 +98,9 @@ const SignUp = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleCloseModal = () => {
     setShowModal(false);
-    navigate("/profile/create");
+    navigate("/login");
   };
 
   return (

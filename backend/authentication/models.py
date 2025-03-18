@@ -50,7 +50,7 @@ class Membership(models.Model):
     is_approved = models.BooleanField(default=False)
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='approved_memberships')
     approved_date = models.DateTimeField(null=True, blank=True)
-
+    notes = models.TextField(blank=True, null=True)  
     class Meta:
         ordering = ['-start_date']
 

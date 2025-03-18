@@ -27,9 +27,9 @@ const SignIn = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/token/", 
+        "http://localhost:8000/auth/token/", 
         {
-          email: formData.email,
+          username: formData.email,
           password: formData.password,
         }
       );

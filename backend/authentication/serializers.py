@@ -14,7 +14,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'password2')
+        fields = ('email', 'password', 'password2','full_name')
         extra_kwargs = {
             'email': {'required': True}
         }
@@ -27,12 +27,15 @@ class UserSignupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password2')
         full_name = validated_data.pop('full_name')
-        user = User.objects.create_user(**validated_data)
-
+        user = User.objects.create_user(
+            username=validated_data['email'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
         # Update profile full name
-        profile = Profile.objects.get(user=user)
-        profile.full_name = full_name
-        profile.save()
+        #profile = Profile.objects.get(user=user)
+        #profile.full_name = full_name
+       # profile.save()
 
         return user
 
