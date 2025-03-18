@@ -2,10 +2,7 @@
 
 from django.contrib import admin
 from django.utils import timezone
-from .models import (
-    Event, Attendance, DigitalContent, 
-    ContentProgress, Benefit, BenefitUsage
-)
+from .models import Event, Attendance
 
 class AttendanceInline(admin.TabularInline):
     model = Attendance
@@ -62,49 +59,3 @@ class AttendanceAdmin(admin.ModelAdmin):
     
     mark_as_attended.short_description = "Mark selected attendees as attended"
     mark_as_checked_in.short_description = "Mark selected attendees as checked in"
-
-class ContentProgressInline(admin.TabularInline):
-    model = ContentProgress
-    extra = 0
-    readonly_fields = ('last_accessed',)
-    raw_id_fields = ['user']
-
-@admin.register(DigitalContent)
-class DigitalContentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'content_type', 'access_level', 'created_at', 'is_active')
-    list_filter = ('content_type', 'access_level', 'is_active')
-    search_fields = ('title', 'description')
-    date_hierarchy = 'created_at'
-    readonly_fields = ('created_at', 'updated_at')
-    inlines = [ContentProgressInline]
-
-@admin.register(ContentProgress)
-class ContentProgressAdmin(admin.ModelAdmin):
-    list_display = ('user', 'content', 'progress_percentage', 'completed', 'last_accessed')
-    list_filter = ('completed', 'content__content_type')
-    search_fields = ('user__email', 'user__username', 'content__title')
-    date_hierarchy = 'last_accessed'
-    raw_id_fields = ['user', 'content']
-    list_select_related = ['user', 'content']
-
-class BenefitUsageInline(admin.TabularInline):
-    model = BenefitUsage
-    extra = 0
-    readonly_fields = ('used_at',)
-    raw_id_fields = ['user']
-
-@admin.register(Benefit)
-class BenefitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'membership_level_required', 'is_active')
-    list_filter = ('membership_level_required', 'is_active')
-    search_fields = ('name', 'description')
-    inlines = [BenefitUsageInline]
-
-@admin.register(BenefitUsage)
-class BenefitUsageAdmin(admin.ModelAdmin):
-    list_display = ('user', 'benefit', 'used_at', 'usage_count')
-    list_filter = ('benefit__membership_level_required',)
-    search_fields = ('user__email', 'user__username', 'benefit__name', 'notes')
-    date_hierarchy = 'used_at'
-    raw_id_fields = ['user', 'benefit']
-    list_select_related = ['user', 'benefit']
