@@ -1,7 +1,8 @@
 .container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
 .header {
@@ -11,21 +12,85 @@
   margin-bottom: 24px;
 }
 
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .header h1 {
-  font-size: 32px;
+  font-size: 28px;
   color: #333;
   margin: 0;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 102, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: #0066ff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
 }
 
 .card {
   background: white;
   border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.cardHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.cardHeader h2 {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.cardSubtitle {
+  color: #666;
+  font-size: 14px;
+  margin: 4px 0 0 0;
 }
 
 .editButton {
-  background: #2563eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0066ff;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -36,14 +101,19 @@
   transition: background-color 0.2s ease;
 }
 
+.editButton svg {
+  margin-right: 4px;
+}
+
 .editButton:hover {
-  background: #1d4ed8;
+  background: #0052cc;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 24px;
 }
 
 .formGroup {
@@ -55,31 +125,40 @@
 .formGroup label {
   font-weight: 500;
   color: #333;
+  font-size: 14px;
 }
 
 .formGroup input,
 .formGroup textarea {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 16px;
-  transition: border-color 0.2s ease;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.formGroup input::placeholder,
+.formGroup textarea::placeholder {
+  color: #aaa;
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #0066ff;
+  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
 }
 
 .buttonGroup {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .saveButton,
 .cancelButton {
+  display: flex;
+  align-items: center;
   padding: 10px 20px;
   border-radius: 6px;
   font-size: 14px;
@@ -89,13 +168,17 @@
 }
 
 .saveButton {
-  background: #2563eb;
+  background: #0066ff;
   color: white;
   border: none;
 }
 
+.saveButton svg {
+  margin-right: 8px;
+}
+
 .saveButton:hover {
-  background: #1d4ed8;
+  background: #0052cc;
 }
 
 .cancelButton {
@@ -111,7 +194,8 @@
 .profileInfo {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  padding: 24px;
 }
 
 .infoGroup {
@@ -121,36 +205,240 @@
 }
 
 .infoGroup h3 {
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
   margin: 0;
+  font-weight: 500;
 }
 
 .infoGroup p {
-  font-size: 18px;
+  font-size: 16px;
   color: #333;
   margin: 0;
 }
 
+.bio {
+  line-height: 1.5;
+}
+
+.interestsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.interestOption {
+  border: 1px solid var(--border-color, #e1e1e1);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.interestOption:hover {
+  border-color: var(--primary-color, #2563eb);
+  background-color: var(--bg-hover, #f9fafb);
+}
+
+.interestOption.selected {
+  border-color: var(--primary-color, #2563eb);
+  background-color: var(--primary-bg-light, #eff6ff);
+}
+
+.interestContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.interestCheckbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color, #e1e1e1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.selected .interestCheckbox {
+  border-color: var(--primary-color, #2563eb);
+  background-color: var(--primary-color, #2563eb);
+  color: white;
+}
+
+.interestTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark, #111827);
+}
+
+.interestDescription {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--text-medium, #4b5563);
+}
+
+.interestTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.interestTag {
+  background-color: var(--primary-bg-light, #eff6ff);
+  color: var(--primary-color, #2563eb);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.inputNote {
+  color: var(--text-medium, #6b7280);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.membershipInfo {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.membershipHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.membershipBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #eef2ff;
+  color: #0066ff;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.pendingMembershipBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  text-transform: capitalize;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+.membershipDescription {
+  color: #666;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pendingNote {
+  display: block;
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #fffde7;
+  border-left: 3px solid #ffc107;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.upgradeButton {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 16px;
+  background-color: #f3f4f6;
+  color: #333;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.upgradeButton:hover {
+  background-color: #e5e7eb;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.saveButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .editButton {
+    align-self: flex-start;
+  }
+
   .container {
-    margin: 20px auto;
-    padding: 0 16px;
+    padding: 0 12px;
   }
 
   .card {
-    padding: 24px;
+    margin-bottom: 20px;
   }
-
-  .header h1 {
-    font-size: 28px;
+  
+  .form, .profileInfo, .membershipInfo {
+    padding: 16px;
   }
-
-  .infoGroup h3 {
-    font-size: 14px;
+  
+  .cardHeader {
+    padding: 16px;
   }
-
-  .infoGroup p {
-    font-size: 16px;
+  
+  .interestTags {
+    gap: 6px;
+  }
+  
+  .interestTag {
+    padding: 3px 8px;
+    font-size: 13px;
   }
 } 
