@@ -1,0 +1,255 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1200px;
+  width: 100%;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.subtitle {
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+/* Status Message Styles */
+.statusMessage {
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+.errorMessage {
+  background-color: #ffeeee;
+  color: #d32f2f;
+  border-left: 4px solid #d32f2f;
+}
+
+.successMessage {
+  background-color: #eefff5;
+  color: #2e7d32;
+  border-left: 4px solid #2e7d32;
+}
+
+.plansContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .plansContainer {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.planCard {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  border: 1px solid #eaeaea;
+}
+
+.planTitleArea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.memberTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.price {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.billingPeriod {
+  font-size: 16px;
+  font-weight: normal;
+  color: #888;
+}
+
+.description {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.featuresSection {
+  margin-top: 20px;
+}
+
+.featuresTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #555;
+}
+
+.checkIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.warningIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #ff9800;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.upgradeButton {
+  background-color: #2074e4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+  transition: background-color 0.2s;
+}
+
+.upgradeButton:hover {
+  background-color: #1b68d1;
+}
+
+.upgradeButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.currentPlanLabel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background-color: #f0f0f0;
+  color: #666;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pendingLabel {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #fff3e0;
+  color: #e65100;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.pendingRequestNotice {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pendingRequestNotice p {
+  margin: 0;
+  color: #e65100;
+  font-weight: 500;
+}
+
+.cancelButton {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #d32f2f;
+}
+
+.cancelButton:disabled {
+  background-color: #ffcdd2;
+  cursor: not-allowed;
+} 

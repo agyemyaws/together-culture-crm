@@ -10,6 +10,8 @@ from authentication.views import (
     MembershipApprovalView,
     MembershipHistoryView,
     PendingMembershipRequestsView, CreateProfileView,
+    AllMembersView,
+    MembershipCancelView,
 )
 
 urlpatterns = [
@@ -27,5 +29,9 @@ urlpatterns = [
     path('membership/request/', MembershipRequestView.as_view(), name='request-membership'),
     path('membership/history/', MembershipHistoryView.as_view(), name='membership-history'),
     path('membership/<int:pk>/approve/', MembershipApprovalView.as_view(), name='approve-membership'),
+    path('membership/<int:pk>/cancel/', MembershipCancelView.as_view(), name='cancel-membership'),
     path('membership/pending/', PendingMembershipRequestsView.as_view(), name='pending-memberships'),
+    
+    # Admin URLs
+    path('members/', AllMembersView.as_view(), name='all-members'),
 ]

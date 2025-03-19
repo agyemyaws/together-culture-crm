@@ -27,16 +27,41 @@ const SignIn = () => {
   const fetchUserProfile = async () => {
     try {
       const response = await api.get("/auth/profile/");
+      
+      // Check if user is an admin
+      const isAdmin = response.data.is_staff || response.data.is_superuser;
+      
+      // Extract interests properly
+      let interests = [];
+      if (response.data.current_interests && Array.isArray(response.data.current_interests)) {
+        interests = response.data.current_interests.map(interest => interest.interest_type);
+      }
+      
       const userData = {
-        firstName: response.data.first_name || response.data.username,
-        lastName: response.data.last_name || '',
-        role: response.data.role || 'Member',
-        membership: response.data.membership_type || 'Basic'
+        id: response.data.id,
+        fullName: response.data.full_name || response.data.username,
+        email: response.data.email,
+        phoneNumber: response.data.phone_number,
+        location: response.data.location,
+        bio: response.data.bio,
+        membership: isAdmin ? 'admin' : (response.data.current_membership?.membership_type || 'community'),
+        interests: interests,
+        isAdmin: isAdmin
       };
+      
       updateUser(userData);
+      
+      // Store the complete user data in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // If user is admin, set admin mode on by default
+      if (isAdmin) {
+        localStorage.setItem('adminMode', 'true');
+      }
+      
       return userData;
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      console.error("Error fetching user profile");
       return null;
     }
   };
@@ -53,19 +78,29 @@ const SignIn = () => {
         password: formData.password,
       });
 
-      // Store tokens
-      localStorage.setItem(ACCESS_TOKEN, response.data.access);
-      localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
-
-      // Fetch and store user data
-      await fetchUserProfile();
+      // Store tokens in localStorage
+      const accessToken = response.data.access;
+      const refreshToken = response.data.refresh;
       
-      // Navigate to dashboard
-      navigate("/dashboard");
+      localStorage.setItem(ACCESS_TOKEN, accessToken);
+      localStorage.setItem(REFRESH_TOKEN, refreshToken);
+      
+      // Explicitly set the Authorization header for the next request
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      
+      // Now fetch user profile
+      const userData = await fetchUserProfile();
+      
+      if (userData) {
+        // Only navigate if we successfully got user data
+        navigate("/dashboard");
+      } else {
+        throw new Error("Failed to fetch user profile after login");
+      }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error");
       setError(
-        error.response?.data?.detail || "An error occurred during login"
+        error.response?.data?.detail || error.message || "An error occurred during login"
       );
     } finally {
       setIsSubmitting(false);

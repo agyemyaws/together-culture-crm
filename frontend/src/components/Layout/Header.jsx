@@ -5,12 +5,11 @@ import styles from './Header.module.css';
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [hasNotifications] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const avatarButtonRef = useRef(null);
-  const { user, logout, isLoading, formatMembershipType } = useUser();
+  const { user, logout, isLoading, formatMembershipType, isAdminMode, toggleAdminMode } = useUser();
 
   const getInitials = (fullName) => {
     if (!fullName) return '?';
@@ -21,8 +20,11 @@ const Header = () => {
 
   useEffect(() => {
     console.log('Header component - Current user:', user);
+    console.log('Header component - Admin status:', user?.isAdmin);
+    console.log('Header component - Admin mode status:', isAdminMode);
+    console.log('Header component - Admin mode in localStorage:', localStorage.getItem('adminMode'));
     console.log('Header component - Loading state:', isLoading);
-  }, [user, isLoading]);
+  }, [user, isLoading, isAdminMode]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,25 +82,17 @@ const Header = () => {
     <header className={styles.header}>
       <h1 className={styles.pageTitle}>{getPageTitle()}</h1>
       <div className={styles.headerRight}>
-        <button className={styles.iconButton} aria-label="Notifications">
-          <div className={styles.notificationIcon}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        {user.isAdmin && (
+          <div className={styles.adminModeContainer}>
+            <span className={styles.adminModeLabel}>Admin Mode:</span>
+            <div 
+              className={`${styles.adminModeIndicator} ${isAdminMode ? styles.adminModeActive : ''}`}
+              title={isAdminMode ? "You are in Admin mode" : "You are in User mode"}
             >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            {hasNotifications && <span className={styles.notificationDot}></span>}
+              {isAdminMode ? "ON" : "OFF"}
+            </div>
           </div>
-        </button>
+        )}
         
         <div className={styles.avatarContainer}>
           <button 
@@ -123,6 +117,11 @@ const Header = () => {
               <a href="/profile" className={styles.dropdownItem}>
                 My Profile
               </a>
+              {user.isAdmin && (
+                <a href="/admin" className={styles.dropdownItem}>
+                  Admin Dashboard
+                </a>
+              )}
               <a href="/membership" className={styles.dropdownItem}>
                 Upgrade Membership
               </a>
