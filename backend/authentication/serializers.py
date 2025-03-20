@@ -12,13 +12,61 @@ logger = logging.getLogger(__name__)
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2')
+        fields = ('username', 'email', 'password', 'password2')
         extra_kwargs = {
             'username': {'required': True},
+            'email': {'required': True},
         }
+
+    def validate_username(self, value):
+        """
+        Validate that the username is appropriate.
+        """
+        # Ensure username is at least 3 characters
+        if len(value) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters long.")
+        
+        # Check username format - only allow letters, numbers, and underscores
+        if not all(c.isalnum() or c == '_' for c in value):
+            raise serializers.ValidationError("Username can only contain letters, numbers, and underscores.")
+            
+        # Check if username already exists (for new users only)
+        if not self.instance and User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+            
+        return value
+        
+    def validate_email(self, value):
+        """
+        Validate that the email is appropriate and not already in use.
+        """
+        # Check if email already exists (for new users only)
+        if not self.instance and User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered.")
+            
+        return value
+
+    def validate_password(self, value):
+        """
+        Additional password validation beyond Django's built-in validators.
+        """
+        # Check if password contains at least one uppercase letter
+        if not any(char.isupper() for char in value):
+            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
+            
+        # Check if password contains at least one lowercase letter
+        if not any(char.islower() for char in value):
+            raise serializers.ValidationError("Password must contain at least one lowercase letter.")
+            
+        # Check if password contains at least one digit
+        if not any(char.isdigit() for char in value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+            
+        return value
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -29,6 +77,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')  # Remove password2 before creating user
         user = User.objects.create_user(
             username=validated_data['username'],
+            email=validated_data['email'],
             password=validated_data['password']
         )
         return user
@@ -46,15 +95,54 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         fields = ('full_name', 'phone_number', 'location', 'bio', 'interests', 'created_at')
         extra_kwargs = {
             'full_name': {'required': True, 'allow_blank': False},
+            'phone_number': {'required': True, 'allow_blank': False},
+            'location': {'required': True, 'allow_blank': False},
             'bio': {'required': False, 'allow_blank': True},
-            'phone_number': {'required': False, 'allow_blank': True},
-            'location': {'required': False, 'allow_blank': True},
         }
 
     def validate_full_name(self, value):
         if not value.strip():
             raise serializers.ValidationError("Full name cannot be empty")
-        return value
+            
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Full name must be at least 3 characters long")
+            
+        return value.strip()
+        
+    def validate_phone_number(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Phone number is required")
+            
+        # Remove any whitespace, dashes, or parentheses
+        phone = ''.join(c for c in value if c.isdigit() or c == '+')
+        
+        if phone and len(phone) < 10:
+            raise serializers.ValidationError("Phone number must have at least 10 digits")
+            
+        # Simple phone number pattern check
+        import re
+        if phone and not re.match(r'^[+]?\d{10,15}$', phone):
+            raise serializers.ValidationError("Please enter a valid phone number")
+            
+        return phone
+        
+    def validate_location(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Location is required")
+            
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Location must be at least 3 characters long")
+            
+        return value.strip()
+        
+    def validate_bio(self, value):
+        if not value:
+            return value
+            
+        if len(value.strip()) > 500:
+            raise serializers.ValidationError("Bio must be less than 500 characters")
+            
+        return value.strip()
 
     def validate_interests(self, value):
         if not value or len(value) == 0:
@@ -229,6 +317,34 @@ class ProfileSerializer(serializers.ModelSerializer):
                   'pending_membership_request', 'membership_history',
                   'current_interests', 'interests', 'interests_update',
                   'is_staff', 'is_superuser')
+        # Reuse validation from ProfileCreateSerializer
+        extra_kwargs = {
+            'full_name': {'required': False, 'allow_blank': False},
+            'phone_number': {'required': True, 'allow_blank': False},
+            'location': {'required': True, 'allow_blank': False},
+            'bio': {'required': False, 'allow_blank': True},
+        }
+
+    # Reuse validation methods from ProfileCreateSerializer
+    def validate_full_name(self, value):
+        create_serializer = ProfileCreateSerializer()
+        return create_serializer.validate_full_name(value)
+    
+    def validate_phone_number(self, value):
+        create_serializer = ProfileCreateSerializer()
+        return create_serializer.validate_phone_number(value)
+    
+    def validate_location(self, value):
+        create_serializer = ProfileCreateSerializer()
+        return create_serializer.validate_location(value)
+    
+    def validate_bio(self, value):
+        create_serializer = ProfileCreateSerializer()
+        return create_serializer.validate_bio(value)
+    
+    def validate_interests(self, value):
+        create_serializer = ProfileCreateSerializer()
+        return create_serializer.validate_interests(value)
 
     def update(self, instance, validated_data):
         # Check if we're using the new selective interests update

@@ -11,6 +11,7 @@ const SignIn = () => {
     password: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -22,6 +23,31 @@ const SignIn = () => {
       ...formData,
       [name]: value,
     });
+    
+    // Clear field error when user types
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validate username
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    }
+    
+    // Validate password
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const fetchUserProfile = async () => {
@@ -68,6 +94,12 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     setError("");
 
@@ -122,12 +154,14 @@ const SignIn = () => {
             type="text"
             id="username"
             name="username"
-            className={styles.input}
+            className={`${styles.input} ${errors.username ? styles.inputError : ""}`}
             placeholder="Enter your username"
             value={formData.username}
             onChange={handleChange}
-            required
           />
+          {errors.username && (
+            <p className={styles.errorText}>{errors.username}</p>
+          )}
         </div>
 
         <div className={styles.inputGroup}>
@@ -138,12 +172,14 @@ const SignIn = () => {
             type="password"
             id="password"
             name="password"
-            className={styles.input}
+            className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
-            required
           />
+          {errors.password && (
+            <p className={styles.errorText}>{errors.password}</p>
+          )}
         </div>
 
         <button

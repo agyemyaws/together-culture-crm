@@ -130,16 +130,37 @@ const CompleteProfile = () => {
     if (!data.full_name?.trim()) {
       newErrors.full_name = "Full name is required";
       isValid = false;
+    } else if (data.full_name.trim().length < 3) {
+      newErrors.full_name = "Full name must be at least 3 characters";
+      isValid = false;
     }
 
-    // Validate phone_number (optional but should be a valid format if provided)
-    if (data.phone_number?.trim()) {
-      // Simple phone validation - can be enhanced based on requirements
+    // Make phone_number required and validate format
+    if (!data.phone_number?.trim()) {
+      newErrors.phone_number = "Phone number is required";
+      isValid = false;
+    } else {
+      // phone validation
       const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
       if (!phoneRegex.test(data.phone_number.trim())) {
         newErrors.phone_number = "Please enter a valid phone number";
         isValid = false;
       }
+    }
+
+    // Make location required
+    if (!data.location?.trim()) {
+      newErrors.location = "Location is required";
+      isValid = false;
+    } else if (data.location.trim().length < 3) {
+      newErrors.location = "Location must be at least 3 characters";
+      isValid = false;
+    }
+
+    // Validate bio (optional but can have length limits)
+    if (data.bio?.trim() && data.bio.trim().length > 500) {
+      newErrors.bio = "Bio must be less than 500 characters";
+      isValid = false;
     }
 
     // Validate interests
@@ -148,16 +169,8 @@ const CompleteProfile = () => {
       isValid = false;
     }
 
-    // Validate bio (optional but can have length limits)
-    if (data.bio && data.bio.length > 500) {
-      newErrors.bio = "Bio cannot exceed 500 characters";
-      isValid = false;
-    }
-
-    // Update errors
     setErrors(newErrors);
     setFormValidated(isValid);
-
     return isValid;
   };
 
@@ -295,7 +308,7 @@ const CompleteProfile = () => {
 
             <div className={styles.formGroup}>
               <label htmlFor="phone_number" className={styles.formLabel}>
-                Phone Number
+                Phone Number *
               </label>
               <input
                 type="tel"
@@ -304,13 +317,19 @@ const CompleteProfile = () => {
                 value={formData.phone_number}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
-                className={styles.textInput}
+                className={`${styles.textInput} ${
+                  errors.phone_number ? styles.inputError : ""
+                }`}
+                required
               />
+              {errors.phone_number && (
+                <p className={styles.errorText}>{errors.phone_number}</p>
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="location" className={styles.formLabel}>
-                Location/Address
+                Location/Address *
               </label>
               <input
                 type="text"
@@ -319,8 +338,14 @@ const CompleteProfile = () => {
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="Enter your address"
-                className={styles.textInput}
+                className={`${styles.textInput} ${
+                  errors.location ? styles.inputError : ""
+                }`}
+                required
               />
+              {errors.location && (
+                <p className={styles.errorText}>{errors.location}</p>
+              )}
             </div>
           </section>
 
