@@ -22,21 +22,40 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                # Return field-specific validation errors
+                logger.error(f"Registration validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
             user = serializer.save()
 
             return Response({
                 'user': {
                     'id': user.id,
-                    'username': user.username
+                    'username': user.username,
+                    'email': user.email
                 }
             }, status=status.HTTP_201_CREATED)
         except IntegrityError as e:
-            logger.error(f"Registration error: {str(e)}")
-            return Response(
-                {"detail": "Registration failed. Please try a different username."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            error_msg = str(e)
+            logger.error(f"Registration error: {error_msg}")
+            
+            # Handle different types of integrity errors
+            if 'username' in error_msg.lower():
+                return Response(
+                    {"username": ["This username is already taken."]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif 'email' in error_msg.lower():
+                return Response(
+                    {"email": ["This email is already registered."]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                return Response(
+                    {"detail": "Registration failed due to a database constraint."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         except Exception as e:
             logger.error(f"Unexpected error during registration: {str(e)}")
             return Response(
@@ -53,6 +72,15 @@ class CreateProfileView(generics.CreateAPIView):
         try:
             # Log the raw request data
             logger.debug(f"Raw profile creation data: {request.data}")
+            
+            # Check for required fields before processing
+            required_fields = ['full_name', 'phone_number', 'location', 'interests']
+            for field in required_fields:
+                if not request.data.get(field):
+                    return Response(
+                        {field: [f"{field.replace('_', ' ').title()} is required"]},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             
             # Process interests data separately to ensure proper format
             interests_data = []
@@ -119,11 +147,30 @@ class CreateProfileView(generics.CreateAPIView):
                 }
             }, status=status.HTTP_201_CREATED)
         except Exception as e:
-            logger.error(f"Error creating profile: {str(e)}", exc_info=True)
-            return Response(
-                {"detail": f"Error creating profile: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            error_msg = str(e)
+            logger.error(f"Error creating profile: {error_msg}", exc_info=True)
+            
+            # Try to provide more specific error messages
+            if "full_name" in error_msg.lower():
+                return Response(
+                    {"full_name": [f"Error with full name: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif "phone_number" in error_msg.lower():
+                return Response(
+                    {"phone_number": [f"Error with phone number: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif "interests" in error_msg.lower():
+                return Response(
+                    {"interests": [f"Error with interests: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                return Response(
+                    {"detail": f"Error creating profile: {error_msg}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
@@ -148,6 +195,86 @@ class ProfileView(generics.RetrieveUpdateAPIView):
                 {"detail": "Error retrieving profile"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            
+            # Check if this is a partial update
+            partial = kwargs.pop('partial', False)
+            
+            # For non-partial updates, check required fields
+            if not partial:
+                required_fields = ['phone_number', 'location'] 
+                for field in required_fields:
+                    if field not in request.data or not request.data.get(field):
+                        return Response(
+                            {field: [f"{field.replace('_', ' ').title()} is required"]},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+            
+            # Process interests data if present
+            interests_data = request.data.get('interests')
+            if interests_data is not None:
+                # Handle different formats of interests data
+                if isinstance(interests_data, str):
+                    if ',' in interests_data:  # Comma-separated string
+                        interests_data = [i.strip() for i in interests_data.split(',') if i.strip()]
+                    else:  # Single string value
+                        interests_data = [interests_data]
+                
+                # Make request data mutable if needed
+                if hasattr(request.data, '_mutable'):
+                    request.data._mutable = True
+                    request.data['interests'] = interests_data
+                    request.data._mutable = False
+                else:
+                    # Handle immutable QueryDict
+                    mutable_data = request.data.copy()
+                    mutable_data['interests'] = interests_data
+                    request._request.POST = mutable_data
+            
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            
+            if not serializer.is_valid():
+                logger.error(f"Profile update validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Call the parent class's perform_update method
+            self.perform_update(serializer)
+            
+            if getattr(instance, '_prefetched_objects_cache', None):
+                # If 'prefetch_related' has been applied to a queryset, we need to
+                # forcibly invalidate the prefetch cache on the instance.
+                instance._prefetched_objects_cache = {}
+            
+            return Response(serializer.data)
+            
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Error updating profile: {error_msg}", exc_info=True)
+            
+            # Try to provide more specific error messages
+            if "full_name" in error_msg.lower():
+                return Response(
+                    {"full_name": [f"Error with full name: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif "phone_number" in error_msg.lower():
+                return Response(
+                    {"phone_number": [f"Error with phone number: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif "interests" in error_msg.lower():
+                return Response(
+                    {"interests": [f"Error with interests: {error_msg}"]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                return Response(
+                    {"detail": f"Error updating profile: {error_msg}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 class MembershipRequestView(generics.CreateAPIView):

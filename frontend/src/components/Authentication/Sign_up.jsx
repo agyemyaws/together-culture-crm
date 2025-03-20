@@ -6,6 +6,7 @@ import api from "../../api";
 const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: "",
     password2: "",
   });
@@ -37,17 +38,36 @@ const SignUp = () => {
     // Validate username
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username = "Username can only contain letters, numbers, and underscores";
+    }
+
+    // Validate email
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
     // Validate password
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter";
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one lowercase letter";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one number";
     }
 
     // Validate confirm password
-    if (formData.password !== formData.password2) {
+    if (!formData.password2) {
+      newErrors.password2 = "Please confirm your password";
+    } else if (formData.password !== formData.password2) {
       newErrors.password2 = "Passwords do not match";
     }
 
@@ -57,12 +77,19 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     setError('');
 
     try {
       const response = await api.post('/auth/register/', {
         username: formData.username,
+        email: formData.email,
         password: formData.password,
         password2: formData.password2,
       });
@@ -85,6 +112,10 @@ const SignUp = () => {
         // Handle username-specific errors
         else if (error.response.data.username) {
           setError(error.response.data.username[0]);
+        }
+        // Handle email-specific errors
+        else if (error.response.data.email) {
+          setError(error.response.data.email[0]);
         }
         // Handle non-field errors
         else if (error.response.data.non_field_errors) {
@@ -129,10 +160,29 @@ const SignUp = () => {
             placeholder="Enter your username"
             value={formData.username}
             onChange={handleChange}
-            required
           />
           {errors.username && (
             <p className={styles.errorText}>{errors.username}</p>
+          )}
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label htmlFor="email" className={styles.inputLabel}>
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            className={`${styles.input} ${
+              errors.email ? styles.inputError : ""
+            }`}
+            placeholder="Enter your email address"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && (
+            <p className={styles.errorText}>{errors.email}</p>
           )}
         </div>
 
@@ -150,7 +200,6 @@ const SignUp = () => {
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
-            required
           />
           {errors.password && (
             <p className={styles.errorText}>{errors.password}</p>
@@ -171,7 +220,6 @@ const SignUp = () => {
             placeholder="Confirm your password"
             value={formData.password2}
             onChange={handleChange}
-            required
           />
           {errors.password2 && (
             <p className={styles.errorText}>{errors.password2}</p>
