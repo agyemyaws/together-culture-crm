@@ -1,0 +1,394 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  
+  .modalContent {
+    background-color: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    transition: all 0.2s;
+  }
+  
+  .closeButton:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+  }
+  
+  .eventTitle {
+    font-size: 28px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 24px;
+  }
+  
+  .eventMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .metaItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .metaIcon {
+    font-size: 20px;
+    color: #6b7280;
+  }
+  
+  .metaText {
+    font-size: 16px;
+    color: #4b5563;
+  }
+  
+  .detailsSection {
+    background-color: #f3f8ff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  
+  .sectionTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 12px;
+  }
+  
+  .detailsText {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+  
+  .itemsSection {
+    margin-bottom: 24px;
+  }
+  
+  .itemsList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #4b5563;
+  }
+  
+  .itemIcon {
+    color: #2563eb;
+    font-size: 18px;
+  }
+  
+  .availabilitySection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .spacesText {
+    font-size: 16px;
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  .registerButton {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .registerButton:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .registerButton:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+  }
+  
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Confirmation Styles */
+  .confirmationContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .confirmationHeader {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .confirmationIcon {
+    width: 48px;
+    height: 48px;
+    background-color: #ecfdf5;
+    color: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 16px;
+  }
+  
+  .confirmationTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+  
+  .confirmationSubtitle {
+    font-size: 16px;
+    color: #6b7280;
+  }
+  
+  .ticketContainer {
+    width: 100%;
+    display: flex;
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .ticketLeftBar {
+    width: 8px;
+    background-color: #2563eb;
+  }
+  
+  .ticketContent {
+    flex: 1;
+    padding: 24px;
+  }
+  
+  .organizationName {
+    font-size: 16px;
+    color: #2563eb;
+    margin-bottom: 4px;
+  }
+  
+  .ticketNumber {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: right;
+    margin-bottom: 16px;
+  }
+  
+  .ticketEventTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+  
+  .ticketDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .ticketDetail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .detailLabel {
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .detailValue {
+    font-size: 16px;
+    color: #111827;
+    font-weight: 500;
+  }
+  
+  .qrCodeContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  
+  .qrCode {
+    width: 100px;
+    height: 100px;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .placeholderQR {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .qrCodeText {
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .ticketActions {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .saveTicketButton {
+    flex: 1;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .saveTicketButton:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .downloadIcon {
+    font-size: 18px;
+  }
+  
+  .calendarButton {
+    flex: 1;
+    background-color: white;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .calendarButton:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+  }
+  
+  .calendarIcon {
+    font-size: 18px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .modalContent {
+      padding: 24px 16px;
+    }
+    
+    .eventTitle {
+      font-size: 24px;
+    }
+    
+    .ticketDetails {
+      grid-template-columns: 1fr;
+    }
+    
+    .availabilitySection {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .registerButton {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .ticketActions {
+      flex-direction: column;
+    }
+  }

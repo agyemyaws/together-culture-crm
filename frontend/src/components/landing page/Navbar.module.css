@@ -2,8 +2,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1rem 20px;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
@@ -30,7 +32,15 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 1rem 10px;
+  }
+  
   .nav {
     gap: 1rem;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
   }
 }
