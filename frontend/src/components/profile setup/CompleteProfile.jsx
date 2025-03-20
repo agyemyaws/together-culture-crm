@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./CompleteProfile.module.css";
 import api from '../../api';
+import { useUser } from "../../context/UserContext";
 
 const CompleteProfile = () => {
+  const { user, updateUser } = useUser();
   const [formData, setFormData] = useState({
     full_name: "",
     bio: "",
@@ -16,6 +18,26 @@ const CompleteProfile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formValidated, setFormValidated] = useState(false);
   const [error, setError] = useState("");
+
+  // Prefill form with user data if available
+  useEffect(() => {
+    if (user) {
+      let formattedInterests = [];
+      
+      // Ensure interests is an array of strings
+      if (user.interests && Array.isArray(user.interests)) {
+        formattedInterests = user.interests.map(interest => String(interest));
+      }
+      
+      setFormData({
+        full_name: user.fullName || "",
+        bio: user.bio || "",
+        phone_number: user.phoneNumber || "",
+        location: user.location || "",
+        interests: formattedInterests,
+      });
+    }
+  }, [user]);
 
   const interestOptions = [
     {
@@ -69,15 +91,18 @@ const CompleteProfile = () => {
 
   const handleInterestToggle = (interestId) => {
     const updatedInterests = [...formData.interests];
+    const interestValue = String(interestId);  // Ensure it's a string
 
-    if (updatedInterests.includes(interestId)) {
+    if (updatedInterests.includes(interestValue)) {
       // Remove interest if already selected
-      const index = updatedInterests.indexOf(interestId);
+      const index = updatedInterests.indexOf(interestValue);
       updatedInterests.splice(index, 1);
     } else {
       // Add interest if not selected
-      updatedInterests.push(interestId);
+      updatedInterests.push(interestValue);
     }
+
+    console.log(`Interest toggled: ${interestValue}, new interests:`, updatedInterests);
 
     const updatedFormData = {
       ...formData,
@@ -101,26 +126,51 @@ const CompleteProfile = () => {
     const newErrors = {};
     let isValid = true;
 
-    // Validate full_name (changed from fullName)
+    // Validate full_name
     if (!data.full_name?.trim()) {
       newErrors.full_name = "Full name is required";
       isValid = false;
+    } else if (data.full_name.trim().length < 3) {
+      newErrors.full_name = "Full name must be at least 3 characters";
+      isValid = false;
     }
 
-    // Validate phoneNumber (optional field, but could add validation if needed)
+    // Make phone_number required and validate format
+    if (!data.phone_number?.trim()) {
+      newErrors.phone_number = "Phone number is required";
+      isValid = false;
+    } else {
+      // phone validation
+      const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
+      if (!phoneRegex.test(data.phone_number.trim())) {
+        newErrors.phone_number = "Please enter a valid phone number";
+        isValid = false;
+      }
+    }
 
-    // Validate location (optional field, but could add validation if needed)
+    // Make location required
+    if (!data.location?.trim()) {
+      newErrors.location = "Location is required";
+      isValid = false;
+    } else if (data.location.trim().length < 3) {
+      newErrors.location = "Location must be at least 3 characters";
+      isValid = false;
+    }
+
+    // Validate bio (optional but can have length limits)
+    if (data.bio?.trim() && data.bio.trim().length > 500) {
+      newErrors.bio = "Bio must be less than 500 characters";
+      isValid = false;
+    }
 
     // Validate interests
-    if (data.interests.length === 0) {
+    if (!data.interests || data.interests.length === 0) {
       newErrors.interests = "Please select at least one interest";
       isValid = false;
     }
 
-    // Update errors
     setErrors(newErrors);
     setFormValidated(isValid);
-
     return isValid;
   };
 
@@ -134,14 +184,86 @@ const CompleteProfile = () => {
 
     setIsSubmitting(true);
     setError("");
+    // Clear any previous field errors
+    setErrors({});
 
     try {
-      await api.post('/auth/profile/create/', formData);
+      // Ensure interests is properly formatted as a JSON array of strings
+      const formattedInterests = formData.interests.map(interest => String(interest));
+      
+      const dataToSubmit = {
+        ...formData,
+        interests: formattedInterests
+      };
+      
+      // Detailed debug logging
+      console.log('Interest data format:', {
+        interests: formattedInterests,
+        type: typeof formattedInterests,
+        isArray: Array.isArray(formattedInterests),
+        sample: formattedInterests.length > 0 ? formattedInterests[0] : null,
+        sampleType: formattedInterests.length > 0 ? typeof formattedInterests[0] : null
+      });
+      
+      console.log('Submitting profile data:', dataToSubmit);
+      
+      const response = await api.post('/auth/profile/create/', dataToSubmit);
+      
+      // Update the user context with new profile data
+      if (response.data && response.data.profile) {
+        updateUser({
+          fullName: response.data.profile.full_name,
+          bio: response.data.profile.bio,
+          phoneNumber: response.data.profile.phone_number,
+          location: response.data.profile.location,
+          interests: response.data.profile.interests,
+        });
+      }
+      
       // Navigate to dashboard on success
       window.location.href = '/dashboard';
     } catch (error) {
       console.error('Error creating profile:', error);
-      setError(error.response?.data?.detail || 'Failed to create profile. Please try again.');
+      
+      // Handle validation errors
+      if (error.response?.data) {
+        // Check if the response contains field errors
+        const responseData = error.response.data;
+        
+        if (typeof responseData === 'object') {
+          // Handle field-specific errors
+          const fieldErrors = {};
+          
+          Object.entries(responseData).forEach(([field, errorMessages]) => {
+            // Convert errors to string if they're arrays
+            const errorMessage = Array.isArray(errorMessages) 
+              ? errorMessages.join(', ') 
+              : errorMessages;
+              
+            // Map the field name if needed
+            fieldErrors[field] = errorMessage;
+          });
+          
+          if (Object.keys(fieldErrors).length > 0) {
+            setErrors(fieldErrors);
+            
+            // Also show a general error message
+            setError('Please correct the errors in the form.');
+            return;
+          }
+        }
+        
+        // If it's a detail message or other format
+        if (responseData.detail) {
+          setError(responseData.detail);
+        } else if (typeof responseData === 'string') {
+          setError(responseData);
+        } else {
+          setError('Failed to create profile. Please check your information and try again.');
+        }
+      } else {
+        setError('An error occurred while creating your profile. Please try again later.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -151,6 +273,12 @@ const CompleteProfile = () => {
     <div className={styles.pageContainer}>
       <h1 className={styles.pageTitle}>Complete Profile</h1>
       <p className={styles.infoMessage}>Complete your profile to get started</p>
+
+      {error && (
+        <div className={styles.errorAlert}>
+          <p>{error}</p>
+        </div>
+      )}
 
       <div className={styles.profileContainer}>
         <form onSubmit={handleSubmit} className={styles.profileForm}>
@@ -180,7 +308,7 @@ const CompleteProfile = () => {
 
             <div className={styles.formGroup}>
               <label htmlFor="phone_number" className={styles.formLabel}>
-                Phone Number
+                Phone Number *
               </label>
               <input
                 type="tel"
@@ -189,13 +317,19 @@ const CompleteProfile = () => {
                 value={formData.phone_number}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
-                className={styles.textInput}
+                className={`${styles.textInput} ${
+                  errors.phone_number ? styles.inputError : ""
+                }`}
+                required
               />
+              {errors.phone_number && (
+                <p className={styles.errorText}>{errors.phone_number}</p>
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="location" className={styles.formLabel}>
-                Location/Address
+                Location/Address *
               </label>
               <input
                 type="text"
@@ -204,8 +338,14 @@ const CompleteProfile = () => {
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="Enter your address"
-                className={styles.textInput}
+                className={`${styles.textInput} ${
+                  errors.location ? styles.inputError : ""
+                }`}
+                required
               />
+              {errors.location && (
+                <p className={styles.errorText}>{errors.location}</p>
+              )}
             </div>
           </section>
 
@@ -223,7 +363,7 @@ const CompleteProfile = () => {
                 <div
                   key={interest.value}
                   className={`${styles.interestOption} ${
-                    formData.interests.includes(interest.value)
+                    formData.interests.includes(String(interest.value))
                       ? styles.selected
                       : ""
                   }`}
@@ -357,7 +497,7 @@ const CompleteProfile = () => {
                     </div>
                   </div>
                   <div className={styles.checkmark}>
-                    {formData.interests.includes(interest.value) && (
+                    {formData.interests.includes(String(interest.value)) && (
                       <svg
                         width="20"
                         height="20"
@@ -407,7 +547,6 @@ const CompleteProfile = () => {
             >
               {isSubmitting ? 'Completing Profile...' : 'Complete Profile'}
             </button>
-            {error && <p className={styles.errorText}>{error}</p>}
           </div>
         </form>
       </div>

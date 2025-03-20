@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./EventCard.module.css";
 
 const EventCard = ({
@@ -9,6 +10,12 @@ const EventCard = ({
   capacity,
   imageUrl,
 }) => {
+  const navigate = useNavigate();
+
+  const handleLearnMore = () => {
+    navigate("/events");
+  };
+
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
@@ -38,7 +45,12 @@ const EventCard = ({
             <span>Capacity: {capacity}</span>
           </div>
         </div>
-        <button className={styles.learnMore}>Learn More</button>
+        <button 
+          className={styles.learnMore} 
+          onClick={handleLearnMore}
+        >
+          Learn More
+        </button>
       </div>
     </div>
   );

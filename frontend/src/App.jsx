@@ -1,48 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import "./App.css";
-import LandingPage from "./pages/landingPage";
-import LoginPage from "./pages/loginPage";
-import SignupPage from "./pages/SignupPage";
-import CompleteProfilePage from "./pages/completeProfilePage";
-import DashboardPage from './pages/DashboardPage';
-import ProtectedRoute from "./components/ProtectedRoute";
-
-function Logout() {
-  localStorage.clear();
-  return <Navigate to="/login" />;
-}
+import { BrowserRouter as Router } from 'react-router-dom';
+import { UserProvider } from './context/UserContext';
+import AppRoutes from './routes';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/join" element={<SignupPage />} />
-        <Route path="/logout" element={<Logout />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/complete-profile"
-          element={
-            <ProtectedRoute>
-              <CompleteProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Catch all - redirect to landing page */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+      <UserProvider>
+        <AppRoutes />
+      </UserProvider>
     </Router>
   );
 }
