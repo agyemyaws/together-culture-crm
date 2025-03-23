@@ -1,10 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import "./App.css";
 import LandingPage from "./pages/landingPage";
 import LoginPage from "./pages/loginPage";
 import SignupPage from "./pages/SignupPage";
 import CompleteProfilePage from "./pages/completeProfilePage";
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from "./pages/DashboardPage";
+import DigitalContentPage from "./pages/digital_content";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function Logout() {
@@ -36,6 +42,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/digital-content"
+          element={
+            <ProtectedRoute>
+              <DigitalContentPage />
             </ProtectedRoute>
           }
         />
