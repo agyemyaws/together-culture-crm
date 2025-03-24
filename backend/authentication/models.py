@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-
 class User(AbstractUser):
     email = models.EmailField(null=True)
     username = models.CharField(max_length=30, unique=True)
@@ -15,7 +14,6 @@ class User(AbstractUser):
             return Profile.objects.get(user=self)
         except Profile.DoesNotExist:
             return None
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -30,14 +28,11 @@ class Profile(models.Model):
 
     @property
     def current_membership(self):
-        """Get the current active membership"""
         return self.memberships.filter(end_date__isnull=True, is_approved=True).first()
 
     @property
     def pending_membership_request(self):
-        """Get pending membership request if any"""
         return self.memberships.filter(end_date__isnull=True, is_approved=False).first()
-
 
 class Membership(models.Model):
     MEMBERSHIP_CHOICES = [
@@ -60,20 +55,15 @@ class Membership(models.Model):
     def save(self, *args, **kwargs):
         if self.is_approved and not self.approved_date:
             self.approved_date = timezone.now()
-
-            # End any existing approved memberships
             current_memberships = Membership.objects.filter(
                 profile=self.profile,
                 end_date__isnull=True,
                 is_approved=True
             ).exclude(pk=self.pk)
-
             for membership in current_memberships:
                 membership.end_date = timezone.now()
                 membership.save()
-
         super().save(*args, **kwargs)
-
 
 class Interest(models.Model):
     INTEREST_CHOICES = [
@@ -91,3 +81,15 @@ class Interest(models.Model):
 
     class Meta:
         ordering = ['-start_date']
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
+    action_type = models.CharField(max_length=50)  # e.g., 'login', 'profile_update'
+    timestamp = models.DateTimeField(default=timezone.now)
+    details = models.TextField(blank=True)  # Optional details about the action
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action_type} at {self.timestamp}"

@@ -9,10 +9,15 @@ from authentication.views import (
     MembershipRequestView,
     MembershipApprovalView,
     MembershipHistoryView,
-    PendingMembershipRequestsView, CreateProfileView,
+    PendingMembershipRequestsView,
+    CreateProfileView,
     AllMembersView,
     MembershipCancelView,
+    EngagementAnalyticsView,  
+    FunnelAnalyticsView,     
+    InterestCategorizationView,  
 )
+
 
 urlpatterns = [
     # Authentication URLs
@@ -21,7 +26,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
 
     # Profile URLs
-
     path('profile/create/', CreateProfileView.as_view(), name='create-profile'),
     path('profile/', ProfileView.as_view(), name='profile'),
 
@@ -34,4 +38,9 @@ urlpatterns = [
     
     # Admin URLs
     path('members/', AllMembersView.as_view(), name='all-members'),
+    
+    # Analytics URLs 
+    path('analytics/engagement/', EngagementAnalyticsView.as_view(), name='engagement-analytics'),
+    path('analytics/funnel/', FunnelAnalyticsView.as_view(), name='funnel-analytics'),
+    path('analytics/interests/', InterestCategorizationView.as_view(), name='interest-categorization'),
 ]
