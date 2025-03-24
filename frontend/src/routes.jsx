@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/landingPage";
 import LoginPage from "./pages/loginPage";
@@ -90,6 +91,17 @@ const AppRoutes = () => {
         }
       />
       
+      {/* Benefits Routes (Optional) */}
+      <Route
+        path="/benefits"
+        element={
+          <ProtectedRoute>
+            {/* You could create a dedicated Benefits page if needed */}
+            <Navigate to="/dashboard" />
+          </ProtectedRoute>
+        }
+      />
+      
       {/* Admin Routes */}
       <Route
         path="/admin"
@@ -106,4 +118,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;
