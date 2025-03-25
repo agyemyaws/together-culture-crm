@@ -1,3 +1,5 @@
+# authentication/urls.py
+
 from django.urls import path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -16,8 +18,15 @@ from authentication.views import (
     EngagementAnalyticsView,  
     FunnelAnalyticsView,     
     InterestCategorizationView,  
+    CommunityMembersView,
+    RecentDiscussionsView,
+    AllCommunityMembersView,
+    CreateDiscussionView,
+    DiscussionDetailView,
+    CommunityMemberDetailView,
+    CreateReplyView,
+    DiscussionsListView,  # Add this import
 )
-
 
 urlpatterns = [
     # Authentication URLs
@@ -43,4 +52,14 @@ urlpatterns = [
     path('analytics/engagement/', EngagementAnalyticsView.as_view(), name='engagement-analytics'),
     path('analytics/funnel/', FunnelAnalyticsView.as_view(), name='funnel-analytics'),
     path('analytics/interests/', InterestCategorizationView.as_view(), name='interest-categorization'),
+
+    # Community Members and Discussions
+    path('community-members/', CommunityMembersView.as_view(), name='community-members'),
+    path('recent-discussions/', RecentDiscussionsView.as_view(), name='recent-discussions'),
+    path('all-community-members/', AllCommunityMembersView.as_view(), name='all-community-members'), 
+    path('create-discussion/', CreateDiscussionView.as_view(), name='create-discussion'), 
+    path('community-members/<int:id>/', CommunityMemberDetailView.as_view(), name='community-member-detail'),
+    path('discussions/<int:discussion_id>/reply/', CreateReplyView.as_view(), name='create-reply'),  
+    path('discussions/<int:id>/', DiscussionDetailView.as_view(), name='discussion-detail'), 
+    path('discussions/', DiscussionsListView.as_view(), name='discussions'),  
 ]

@@ -84,12 +84,36 @@ class Interest(models.Model):
 
 class ActivityLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
-    action_type = models.CharField(max_length=50)  # e.g., 'login', 'profile_update'
+    action_type = models.CharField(max_length=50) 
     timestamp = models.DateTimeField(default=timezone.now)
-    details = models.TextField(blank=True)  # Optional details about the action
+    details = models.TextField(blank=True)  
 
     class Meta:
         ordering = ['-timestamp']
 
     def __str__(self):
         return f"{self.user.username} - {self.action_type} at {self.timestamp}"
+
+
+class Discussion(models.Model):
+    title = models.CharField(max_length=500)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='discussions')
+    created_at = models.DateTimeField(default=timezone.now)
+    replies_count = models.PositiveIntegerField(default=0)  
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title        
+class Reply(models.Model):
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='replies')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replies')
+    content = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Reply by {self.author.username} on {self.discussion.title}"        

@@ -1,17 +1,21 @@
+# authentication/views.py
+
 from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from .models import Profile, Membership, User, ActivityLog  # Ensure ActivityLog is included
+from .models import Profile, Membership, User, ActivityLog, Discussion 
 from .serializers import (
     UserSignupSerializer,
     ProfileCreateSerializer,
     ProfileSerializer,
     MembershipSerializer,
     MembershipRequestSerializer,
-    PendingMembershipSerializer
+    PendingMembershipSerializer,
+    DiscussionSerializer,
+    ReplySerializer,
 )
-from django.db import IntegrityError
-from django.db.models import Count  # For aggregation
+from django.db import IntegrityError, transaction
+from django.db.models import Count, F
 from django.utils import timezone
 import logging
 
@@ -334,26 +338,19 @@ class MembershipCancelView(generics.DestroyAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-
 class EngagementAnalyticsView(generics.ListAPIView):
     permission_classes = (IsAdminUser,)
     
     def get(self, request, *args, **kwargs):
         thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
         
-        # Count users with last_login in the last 30 days
+        
         active_users = User.objects.filter(
             last_login__gte=thirty_days_ago
         ).count()
         
-        # Optionally keep login_counts based on ActivityLog if you still want it
-        login_counts = ActivityLog.objects.filter(
-            action_type='login',
-            timestamp__gte=thirty_days_ago
-        ).values('user__username').annotate(login_count=Count('id'))
-        
         return Response({
-            'login_counts': list(login_counts),
+           
             'active_users': active_users,
         })
 
@@ -376,7 +373,7 @@ class FunnelAnalyticsView(generics.ListAPIView):
         ).values('membership_type').annotate(count=Count('id'))
         
         progression_data = []
-        profiles = Profile.objects.select_related('user').all()  # Optimize with select_related
+        profiles = Profile.objects.select_related('user').all() 
         for profile in profiles:
             memberships = profile.memberships.order_by('start_date')
             if memberships.count() > 1:
@@ -387,8 +384,8 @@ class FunnelAnalyticsView(generics.ListAPIView):
                         transitions.append(transition)
                 if transitions:
                     progression_data.append({
-                        'username': profile.user.username,  # Add username from related User model
-                        'profile_id': profile.id,           # Keep profile_id if still needed
+                        'username': profile.user.username,  
+                        'profile_id': profile.id,           
                         'transitions': transitions
                     })
         
@@ -401,6 +398,7 @@ class FunnelAnalyticsView(generics.ListAPIView):
             },
             'progression': progression_data,
         })
+
 class InterestCategorizationView(generics.ListAPIView):
     permission_classes = (IsAdminUser,)
     
@@ -431,3 +429,89 @@ class InterestCategorizationView(generics.ListAPIView):
             })
         
         return Response(categorization)
+
+class CommunityMembersView(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)  
+
+    def get_queryset(self):
+        return Profile.objects.exclude(user=self.request.user).select_related('user')  [:3]        
+
+class RecentDiscussionsView(generics.ListAPIView):
+    serializer_class = DiscussionSerializer
+    permission_classes = (IsAuthenticated,)  
+
+    def get_queryset(self):
+        return Discussion.objects.all().select_related('author')[:2]  
+
+
+class AllCommunityMembersView(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Profile.objects.exclude(user=self.request.user).select_related('user')    
+
+class CreateDiscussionView(generics.CreateAPIView):
+    serializer_class = DiscussionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        
+        serializer.save(author=self.request.user)    
+
+
+class CreateReplyView(generics.CreateAPIView):
+    serializer_class = ReplySerializer
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+       
+        discussion_id = self.kwargs['discussion_id']
+        try:
+            discussion = Discussion.objects.get(id=discussion_id)
+        except Discussion.DoesNotExist:
+            raise serializers.ValidationError("Discussion does not exist.")
+
+        with transaction.atomic():
+            serializer.save(author=self.request.user, discussion=discussion)
+         
+            discussion.replies_count = F('replies_count') + 1
+            discussion.save()   
+
+class RecentDiscussionsView(generics.ListAPIView):
+    serializer_class = DiscussionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        logger.info("Fetching recent discussions")
+        queryset = Discussion.objects.all().select_related('author').prefetch_related('replies')[:2]
+        logger.info(f"Found {queryset.count()} discussions")
+        return queryset           
+
+
+class DiscussionDetailView(generics.RetrieveAPIView):
+    serializer_class = DiscussionSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Discussion.objects.all().select_related('author').prefetch_related('replies')   
+
+class CommunityMemberDetailView(generics.RetrieveAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Profile.objects.all().select_related('user').prefetch_related('interests', 'memberships')        
+
+class DiscussionsListView(generics.ListAPIView):
+    serializer_class = DiscussionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        logger.info("Fetching all discussions")
+        queryset = Discussion.objects.all().select_related('author').prefetch_related('replies')
+        logger.info(f"Found {queryset.count()} discussions")
+        return queryset

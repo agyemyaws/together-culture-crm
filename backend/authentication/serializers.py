@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from .models import Profile, Membership, Interest
 from django.utils import timezone
 import logging
-
+from .models import Profile, Membership, Interest, Discussion, Reply
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -325,7 +325,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'bio': {'required': False, 'allow_blank': True},
         }
 
-    # Reuse validation methods from ProfileCreateSerializer
+    
     def validate_full_name(self, value):
         create_serializer = ProfileCreateSerializer()
         return create_serializer.validate_full_name(value)
@@ -347,25 +347,22 @@ class ProfileSerializer(serializers.ModelSerializer):
         return create_serializer.validate_interests(value)
 
     def update(self, instance, validated_data):
-        # Check if we're using the new selective interests update
+        
         interests_update = validated_data.pop('interests_update', None)
         
-        # Fall back to traditional interests field if selective update not provided
+    
         interests_data = validated_data.pop('interests', None)
 
-        # Update profile instance
+       
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Handle selective interest updates if provided
+       
         if interests_update:
-            # Get lists of added, removed, and unchanged interests
             removed_interests = interests_update.get('removed', [])
             added_interests = interests_update.get('added', [])
-            # unchanged_interests are just for reference, we don't need to process them
             
-            # End removed interests
             for interest_type in removed_interests:
                 interests_to_end = instance.interests.filter(
                     interest_type=interest_type, 
@@ -375,22 +372,20 @@ class ProfileSerializer(serializers.ModelSerializer):
                     interest.end_date = timezone.now()
                     interest.save()
             
-            # Add new interests
+        
             for interest_type in added_interests:
                 Interest.objects.create(
                     profile=instance,
                     interest_type=interest_type
                 )
                 
-        # Traditional approach - end all current interests and create new ones
+      
         elif interests_data:
-            # End current interests
             current_interests = instance.interests.filter(end_date__isnull=True)
             for interest in current_interests:
                 interest.end_date = timezone.now()
                 interest.save()
 
-            # Create new interests - create actual Interest objects instead of trying to assign strings
             for interest_type in interests_data:
                 Interest.objects.create(
                     profile=instance,
@@ -409,7 +404,7 @@ class MembershipRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         profile = self.context['profile']
 
-        # Check if there's already a pending request
+        
         pending_request = profile.pending_membership_request
         if pending_request:
             raise serializers.ValidationError(
@@ -421,3 +416,52 @@ class MembershipRequestSerializer(serializers.ModelSerializer):
             is_approved=False,
             **validated_data
         )
+
+
+
+class DiscussionSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Discussion
+        fields = ('id', 'title', 'author', 'replies_count', 'created_at')
+        read_only_fields = ('id', 'author', 'replies_count', 'created_at')
+
+    def validate_title(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Title cannot be empty.")
+        if len(value.strip()) < 5:
+            raise serializers.ValidationError("Title must be at least 5 characters long.")
+        return value.strip()
+
+
+class ReplySerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Reply
+        fields = ('id', 'content', 'author', 'created_at')
+        read_only_fields = ('id', 'author', 'created_at')
+
+    def validate_content(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Content cannot be empty.")
+        if len(value.strip()) < 5:
+            raise serializers.ValidationError("Content must be at least 5 characters long.")
+        return value.strip()
+
+class DiscussionSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='author.username', read_only=True)
+    replies = ReplySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Discussion
+        fields = ('id', 'title', 'author', 'replies_count', 'created_at', 'replies')  # Add 'replies' here
+        read_only_fields = ('id', 'author', 'replies_count', 'created_at', 'replies')
+
+    def validate_title(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Title cannot be empty.")
+        if len(value.strip()) < 5:
+            raise serializers.ValidationError("Title must be at least 5 characters long.")
+        return value.strip()
