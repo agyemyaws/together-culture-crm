@@ -13,6 +13,7 @@ import MembersList from "./components/Dashboard/MembersList";
 import CreateDiscussion from "./components/Dashboard/CreateDiscussion";
 import DiscussionDetail from "./components/Dashboard/DiscussionDetail";
 import DiscussionsList from "./components/Dashboard/DiscussionsList";
+import MessagesList from "./components/Dashboard/MessagesList";
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
 
@@ -131,6 +132,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <DiscussionsList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <MessagesList />
           </ProtectedRoute>
         }
       />

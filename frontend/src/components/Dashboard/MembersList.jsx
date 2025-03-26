@@ -1,14 +1,20 @@
-
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./Dashboard.module.css"; 
+import styles from "./Dashboard.module.css";
 
 const MembersList = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // State for the dialog
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
+  const [sendSuccess, setSendSuccess] = useState(false);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -22,6 +28,7 @@ const MembersList = () => {
           throw new Error("Failed to fetch members");
         }
         const data = await response.json();
+        console.log("API Response for members:", data);
         setMembers(data);
         setLoading(false);
       } catch (err) {
@@ -33,6 +40,71 @@ const MembersList = () => {
     fetchMembers();
   }, []);
 
+  const handleOpenDialog = (member) => {
+    setSelectedMember(member);
+    setOpenDialog(true);
+    setMessage("");
+    setSendError(null);
+    setSendSuccess(false);
+  };
+
+  // Close the dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedMember(null);
+    setMessage("");
+    setSendError(null);
+    setSendSuccess(false);
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) {
+        setSendError("Message cannot be empty.");
+        return;
+    }
+
+    if (!selectedMember || !selectedMember.user_id) {
+        setSendError("No recipient selected.");
+        return;
+    }
+
+    setSending(true);
+    setSendError(null);
+    setSendSuccess(false);
+
+    const payload = {
+        recipient_id: selectedMember.user_id,
+        content: message,
+    };
+    console.log("Sending message payload:", payload);
+
+    try {
+        const response = await fetch("http://localhost:8000/auth/messages/send/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.log("Error response from server:", errorData);
+            throw new Error(errorData.error || "Failed to send message");
+        }
+
+        setSendSuccess(true);
+        setTimeout(() => {
+            handleCloseDialog();
+        }, 1500);
+    } catch (err) {
+        setSendError(err.message);
+    } finally {
+        setSending(false);
+    }
+};
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -43,13 +115,19 @@ const MembersList = () => {
 
   return (
     <div className={styles.card} style={{ margin: "1.5rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1rem",
+        }}
+      >
         <h3 className={styles.sectionTitle}>All Members</h3>
         <button
           className={styles.eventAction}
           onClick={() => navigate("/dashboard")}
           style={{ backgroundColor: "#e6f0ff", color: "#0066ff" }}
-           
         >
           Back to Dashboard
         </button>
@@ -93,7 +171,7 @@ const MembersList = () => {
               </div>
               <button
                 className={styles.eventAction}
-                onClick={() => navigate(`/members/${member.id}`)}
+                onClick={() => handleOpenDialog(member)}
               >
                 Connect
               </button>
@@ -103,6 +181,63 @@ const MembersList = () => {
           <p>No members found.</p>
         )}
       </div>
+
+      {/* Custom Dialog for Sending a Message */}
+      {openDialog && selectedMember && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h3>Send a Message to {selectedMember.full_name}</h3>
+              <button
+                className={styles.closeButton}
+                onClick={handleCloseDialog}
+                disabled={sending}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.modalContent}>
+              {sendSuccess ? (
+                <div className={styles.successMessage}>
+                  Message sent successfully!
+                </div>
+              ) : (
+                <>
+                  {sendError && (
+                    <div className={styles.errorMessage}>{sendError}</div>
+                  )}
+                  <textarea
+                    className={styles.messageInput}
+                    placeholder="Type your message here..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    disabled={sending}
+                    rows={4}
+                  />
+                </>
+              )}
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={handleCloseDialog}
+                disabled={sending}
+              >
+                Cancel
+              </button>
+              {!sendSuccess && (
+                <button
+                  className={styles.sendButton}
+                  onClick={handleSendMessage}
+                  disabled={sending || !message.trim()}
+                >
+                  {sending ? "Sending..." : "Send"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,9 +1,9 @@
-# authentication/views.py
-
 from rest_framework import generics, status, views
+from rest_framework.views import APIView  
+from django.db import models
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from .models import Profile, Membership, User, ActivityLog, Discussion 
+from .models import Profile, Membership, User, ActivityLog, Discussion, Message
 from .serializers import (
     UserSignupSerializer,
     ProfileCreateSerializer,
@@ -13,6 +13,7 @@ from .serializers import (
     PendingMembershipSerializer,
     DiscussionSerializer,
     ReplySerializer,
+    MessageSerializer, 
 )
 from django.db import IntegrityError, transaction
 from django.db.models import Count, F
@@ -21,7 +22,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Existing views
+# Existing views (unchanged)
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSignupSerializer
     permission_classes = (AllowAny,)
@@ -344,13 +345,11 @@ class EngagementAnalyticsView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
         
-        
         active_users = User.objects.filter(
             last_login__gte=thirty_days_ago
         ).count()
         
         return Response({
-           
             'active_users': active_users,
         })
 
@@ -435,15 +434,14 @@ class CommunityMembersView(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)  
 
     def get_queryset(self):
-        return Profile.objects.exclude(user=self.request.user).select_related('user')  [:3]        
+        return Profile.objects.exclude(user=self.request.user).select_related('user')[:3]        
 
 class RecentDiscussionsView(generics.ListAPIView):
     serializer_class = DiscussionSerializer
     permission_classes = (IsAuthenticated,)  
 
     def get_queryset(self):
-        return Discussion.objects.all().select_related('author')[:2]  
-
+        return Discussion.objects.all().select_related('author')[:3]  
 
 class AllCommunityMembersView(generics.ListAPIView):
     serializer_class = ProfileSerializer
@@ -457,16 +455,13 @@ class CreateDiscussionView(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
-        
         serializer.save(author=self.request.user)    
-
 
 class CreateReplyView(generics.CreateAPIView):
     serializer_class = ReplySerializer
     permission_classes = (IsAuthenticated,)
 
     def perform_create(self, serializer):
-       
         discussion_id = self.kwargs['discussion_id']
         try:
             discussion = Discussion.objects.get(id=discussion_id)
@@ -475,20 +470,8 @@ class CreateReplyView(generics.CreateAPIView):
 
         with transaction.atomic():
             serializer.save(author=self.request.user, discussion=discussion)
-         
             discussion.replies_count = F('replies_count') + 1
             discussion.save()   
-
-class RecentDiscussionsView(generics.ListAPIView):
-    serializer_class = DiscussionSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        logger.info("Fetching recent discussions")
-        queryset = Discussion.objects.all().select_related('author').prefetch_related('replies')[:2]
-        logger.info(f"Found {queryset.count()} discussions")
-        return queryset           
-
 
 class DiscussionDetailView(generics.RetrieveAPIView):
     serializer_class = DiscussionSerializer
@@ -515,3 +498,91 @@ class DiscussionsListView(generics.ListAPIView):
         queryset = Discussion.objects.all().select_related('author').prefetch_related('replies')
         logger.info(f"Found {queryset.count()} discussions")
         return queryset
+
+
+class SendMessageView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        recipient_id = request.data.get("recipient_id")
+        content = request.data.get("content")
+        parent_message_id = request.data.get("parent_message_id")  
+
+        if not recipient_id or not content:
+            return Response(
+                {"error": "Recipient ID and message content are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recipient = User.objects.get(id=recipient_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Recipient not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        parent_message = None
+        if parent_message_id:
+            try:
+                parent_message = Message.objects.get(id=parent_message_id)
+               
+               
+                if parent_message.sender != request.user and parent_message.recipient != request.user:
+                    return Response(
+                        {"error": "You can only reply to messages in your conversation."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            except Message.DoesNotExist:
+                return Response(
+                    {"error": "Parent message not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        message = Message.objects.create(
+            sender=request.user,
+            recipient=recipient,
+            content=content,
+            parent_message=parent_message
+        )
+
+        serializer = MessageSerializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class GetMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch all messages where the user is either the sender or recipient
+        messages = Message.objects.filter(
+            models.Q(recipient=request.user) | models.Q(sender=request.user)
+        ).order_by('timestamp').select_related('sender', 'recipient', 'parent_message')
+
+        # Group messages by conversation (other user)
+        grouped_messages = {}
+        for message in messages:
+            other_user = message.recipient if message.sender == request.user else message.sender
+            other_user_id = other_user.id
+            other_user_username = other_user.username
+
+            if other_user_id not in grouped_messages:
+                grouped_messages[other_user_id] = {
+                    'other_user_id': other_user_id,
+                    'other_user_username': other_user_username,
+                    'messages': []
+                }
+            grouped_messages[other_user_id]['messages'].append(message)
+
+        # Serialize the grouped messages
+        response_data = []
+        for other_user_id, conversation in grouped_messages.items():
+            messages = conversation['messages']
+            serializer = MessageSerializer(messages, many=True)
+            response_data.append({
+                'other_user_id': conversation['other_user_id'],
+                'other_user_username': conversation['other_user_username'],
+                'messages': serializer.data
+            })
+
+        return Response(response_data, status=status.HTTP_200_OK)

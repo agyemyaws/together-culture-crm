@@ -1,5 +1,3 @@
-# authentication/urls.py
-
 from django.urls import path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -25,7 +23,9 @@ from authentication.views import (
     DiscussionDetailView,
     CommunityMemberDetailView,
     CreateReplyView,
-    DiscussionsListView,  # Add this import
+    DiscussionsListView,  
+    SendMessageView,
+    GetMessagesView,  
 )
 
 urlpatterns = [
@@ -62,4 +62,8 @@ urlpatterns = [
     path('discussions/<int:discussion_id>/reply/', CreateReplyView.as_view(), name='create-reply'),  
     path('discussions/<int:id>/', DiscussionDetailView.as_view(), name='discussion-detail'), 
     path('discussions/', DiscussionsListView.as_view(), name='discussions'),  
+
+    # Messages URLs
+    path("messages/send/", SendMessageView.as_view(), name="send-message"),
+    path("messages/", GetMessagesView.as_view(), name="get-messages"),
 ]
