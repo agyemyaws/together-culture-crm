@@ -8,6 +8,7 @@ const api = axios.create({
   }
 });
 
+// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
@@ -21,13 +22,21 @@ api.interceptors.request.use(
   }
 );
 
+// Add response interceptor for token refresh logic
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't tried to refresh token yet
-    if (error.response.status === 401 && !originalRequest._retry) {
+    // Only attempt refresh if:
+    // 1. It's a 401 error (unauthorized)
+    // 2. We haven't already tried refreshing for this request
+    // 3. We have a refresh token available
+    if (
+      error.response?.status === 401 && 
+      !originalRequest._retry &&
+      localStorage.getItem(REFRESH_TOKEN)
+    ) {
       originalRequest._retry = true;
 
       try {
@@ -39,16 +48,30 @@ api.interceptors.response.use(
           }
         );
 
-        localStorage.setItem(ACCESS_TOKEN, response.data.access);
-        
-        // Retry the original request with new token
-        originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-        return axios(originalRequest);
+        if (response.data.access) {
+          const newToken = response.data.access;
+          
+          // Update tokens
+          localStorage.setItem(ACCESS_TOKEN, newToken);
+          
+          // Update the header for the original request
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          // Also update the default header for subsequent requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+          
+          // Retry the original request
+          return axios(originalRequest);
+        }
       } catch (refreshError) {
-        // If refresh token is invalid, logout user
-        localStorage.clear();
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        // If refresh token is invalid, clear tokens and redirect to login
+        localStorage.removeItem(ACCESS_TOKEN);
+        localStorage.removeItem(REFRESH_TOKEN);
+        
+        // Only redirect if we're in a browser environment
+        if (typeof window !== 'undefined') {
+          window.location.href = "/login";
+        }
       }
     }
 

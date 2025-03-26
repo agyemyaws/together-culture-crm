@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Authentication.module.css";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
+import { useUser } from "../../context/UserContext";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -10,9 +11,11 @@ const SignIn = () => {
     password: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { updateUser } = useUser();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,40 +23,116 @@ const SignIn = () => {
       ...formData,
       [name]: value,
     });
+    
+    // Clear field error when user types
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: "",
+      });
+    }
   };
 
-  const checkProfileStatus = async () => {
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validate username
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    }
+    
+    // Validate password
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const fetchUserProfile = async () => {
     try {
       const response = await api.get("/auth/profile/");
-      return response.data;
-    } catch (error) {
-      // If we get a 404, it means no profile exists
-      if (error.response?.status === 404) {
-        return null;
+      
+      // Check if user is an admin
+      const isAdmin = response.data.is_staff || response.data.is_superuser;
+      
+      // Extract interests properly
+      let interests = [];
+      if (response.data.current_interests && Array.isArray(response.data.current_interests)) {
+        interests = response.data.current_interests.map(interest => interest.interest_type);
       }
-      throw error;
+      
+      const userData = {
+        id: response.data.id,
+        fullName: response.data.full_name || response.data.username,
+        email: response.data.email,
+        phoneNumber: response.data.phone_number,
+        location: response.data.location,
+        bio: response.data.bio,
+        membership: isAdmin ? 'admin' : (response.data.current_membership?.membership_type || 'community'),
+        interests: interests,
+        isAdmin: isAdmin
+      };
+      
+      updateUser(userData);
+      
+      // Store the complete user data in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // If user is admin, set admin mode on by default
+      if (isAdmin) {
+        localStorage.setItem('adminMode', 'true');
+      }
+      
+      return userData;
+    } catch (error) {
+      console.error("Error fetching user profile");
+      return null;
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submitting
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     setError("");
 
     try {
+      // Login request
       const response = await api.post("/auth/token/", {
         username: formData.username,
         password: formData.password,
       });
 
-      localStorage.setItem(ACCESS_TOKEN, response.data.access);
-      localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+      // Store tokens in localStorage
+      const accessToken = response.data.access;
+      const refreshToken = response.data.refresh;
       
-      navigate("/dashboard"); // Always navigate to dashboard
+      localStorage.setItem(ACCESS_TOKEN, accessToken);
+      localStorage.setItem(REFRESH_TOKEN, refreshToken);
+      
+      // Explicitly set the Authorization header for the next request
+      api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      
+      // Now fetch user profile
+      const userData = await fetchUserProfile();
+      
+      if (userData) {
+        // Only navigate if we successfully got user data
+        navigate("/dashboard");
+      } else {
+        throw new Error("Failed to fetch user profile after login");
+      }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error");
       setError(
-        error.response?.data?.detail || "An error occurred during login"
+        error.response?.data?.detail || error.message || "An error occurred during login"
       );
     } finally {
       setIsSubmitting(false);
@@ -75,12 +154,14 @@ const SignIn = () => {
             type="text"
             id="username"
             name="username"
-            className={styles.input}
+            className={`${styles.input} ${errors.username ? styles.inputError : ""}`}
             placeholder="Enter your username"
             value={formData.username}
             onChange={handleChange}
-            required
           />
+          {errors.username && (
+            <p className={styles.errorText}>{errors.username}</p>
+          )}
         </div>
 
         <div className={styles.inputGroup}>
@@ -91,12 +172,14 @@ const SignIn = () => {
             type="password"
             id="password"
             name="password"
-            className={styles.input}
+            className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
-            required
           />
+          {errors.password && (
+            <p className={styles.errorText}>{errors.password}</p>
+          )}
         </div>
 
         <button

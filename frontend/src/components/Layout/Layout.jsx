@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
+import Header from "./Header";
 import styles from "./Layout.module.css";
 
 const Layout = ({ children }) => {
@@ -49,6 +50,7 @@ const Layout = ({ children }) => {
       )}
 
       <div className={styles.mainContent}>
+        <Header />
         <main className={styles.main}>{children}</main>
       </div>
     </div>
