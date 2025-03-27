@@ -12,6 +12,8 @@ from authentication.views import (
     PendingMembershipRequestsView, CreateProfileView,
     AllMembersView,
     MembershipCancelView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -34,4 +36,6 @@ urlpatterns = [
     
     # Admin URLs
     path('members/', AllMembersView.as_view(), name='all-members'),
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]

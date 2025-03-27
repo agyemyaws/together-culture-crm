@@ -180,6 +180,9 @@ const SignIn = () => {
           {errors.password && (
             <p className={styles.errorText}>{errors.password}</p>
           )}
+          <Link to="/password-reset" className={styles.forgotPassword}>
+            Forgot Password?
+          </Link>
         </div>
 
         <button

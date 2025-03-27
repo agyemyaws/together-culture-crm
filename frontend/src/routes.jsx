@@ -9,6 +9,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from './pages/ProfilePage';
 import MembershipPage from './pages/MembershipPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import PasswordResetRequest from './components/auth/PasswordResetRequest';
+import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
 
@@ -55,6 +57,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/join" element={<SignupPage />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/password-reset" element={<PasswordResetRequest />} />
+      <Route path="/password-reset/:uidb64/:token" element={<PasswordResetConfirm />} />
 
       {/* Protected Routes */}
       <Route
