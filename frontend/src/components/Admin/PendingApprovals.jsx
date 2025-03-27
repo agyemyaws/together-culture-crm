@@ -342,4 +342,4 @@ const PendingApprovals = ({ pendingMembers, onApprove, onDecline }) => {
   );
 };
 
-export default PendingApprovals; 
+export default PendingApprovals;

@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-
 class User(AbstractUser):
     email = models.EmailField(null=True)
     username = models.CharField(max_length=30, unique=True)
@@ -15,7 +14,6 @@ class User(AbstractUser):
             return Profile.objects.get(user=self)
         except Profile.DoesNotExist:
             return None
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -30,14 +28,11 @@ class Profile(models.Model):
 
     @property
     def current_membership(self):
-        """Get the current active membership"""
         return self.memberships.filter(end_date__isnull=True, is_approved=True).first()
 
     @property
     def pending_membership_request(self):
-        """Get pending membership request if any"""
         return self.memberships.filter(end_date__isnull=True, is_approved=False).first()
-
 
 class Membership(models.Model):
     MEMBERSHIP_CHOICES = [
@@ -60,20 +55,15 @@ class Membership(models.Model):
     def save(self, *args, **kwargs):
         if self.is_approved and not self.approved_date:
             self.approved_date = timezone.now()
-
-            # End any existing approved memberships
             current_memberships = Membership.objects.filter(
                 profile=self.profile,
                 end_date__isnull=True,
                 is_approved=True
             ).exclude(pk=self.pk)
-
             for membership in current_memberships:
                 membership.end_date = timezone.now()
                 membership.save()
-
         super().save(*args, **kwargs)
-
 
 class Interest(models.Model):
     INTEREST_CHOICES = [
@@ -91,3 +81,56 @@ class Interest(models.Model):
 
     class Meta:
         ordering = ['-start_date']
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
+    action_type = models.CharField(max_length=50) 
+    timestamp = models.DateTimeField(default=timezone.now)
+    details = models.TextField(blank=True)  
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action_type} at {self.timestamp}"
+
+
+class Discussion(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='discussions')
+    created_at = models.DateTimeField(default=timezone.now)
+    replies_count = models.PositiveIntegerField(default=0)  
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title        
+class Reply(models.Model):
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='replies')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replies')
+    content = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Reply by {self.author.username} on {self.discussion.title}"        
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, related_name="sent_messages", on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    parent_message = models.ForeignKey(
+        'self', 
+        null=True, 
+        blank=True, 
+        on_delete=models.SET_NULL, 
+        related_name='replies'
+    )  
+
+    def __str__(self):
+        return f"Message from {self.sender} to {self.recipient}"
