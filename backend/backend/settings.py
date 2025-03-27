@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'authentication',
     'event',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'benefits'
 ]
 
 MIDDLEWARE = [

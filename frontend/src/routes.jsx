@@ -13,6 +13,7 @@ import PasswordResetRequest from './components/auth/PasswordResetRequest';
 import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
+import Benefits from "./pages/BenefitsPage";
 
 const Logout = () => {
   localStorage.clear();
@@ -103,7 +104,15 @@ const AppRoutes = () => {
           </AdminRoute>
         }
       />
-
+      <Route
+        path="/benefits"  
+        element={
+          <ProtectedRoute>
+            <Benefits />
+          </ProtectedRoute>
+        }
+   
+      />
       {/* Catch all - redirect to landing page */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

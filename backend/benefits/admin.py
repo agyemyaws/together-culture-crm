@@ -1,26 +1,14 @@
-# File: backend/benefits/admin.py
-
 from django.contrib import admin
-from .models import Benefit, BenefitUsage
-
-class BenefitUsageInline(admin.TabularInline):
-    model = BenefitUsage
-    extra = 0
-    readonly_fields = ('used_at',)
-    raw_id_fields = ['user']
+from .models import Benefit, UserBenefit
 
 @admin.register(Benefit)
 class BenefitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'membership_level_required', 'is_active')
-    list_filter = ('membership_level_required', 'is_active')
-    search_fields = ('name', 'description')
-    inlines = [BenefitUsageInline]
+    list_display = ['name', 'category', 'value', 'is_active', 'requires_activation']
+    list_filter = ['category', 'is_active', 'requires_activation']
+    search_fields = ['name', 'description']
 
-@admin.register(BenefitUsage)
-class BenefitUsageAdmin(admin.ModelAdmin):
-    list_display = ('user', 'benefit', 'used_at', 'usage_count')
-    list_filter = ('benefit__membership_level_required',)
-    search_fields = ('user__email', 'user__username', 'benefit__name', 'notes')
-    date_hierarchy = 'used_at'
-    raw_id_fields = ['user', 'benefit']
-    list_select_related = ['user', 'benefit']
+@admin.register(UserBenefit)
+class UserBenefitAdmin(admin.ModelAdmin):
+    list_display = ['user', 'benefit', 'is_active', 'activated_on', 'expires_on', 'usage_count']
+    list_filter = ['is_active']
+    search_fields = ['user__username', 'benefit__name']

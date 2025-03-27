@@ -1,101 +1,92 @@
-# File: backend/benefits/views.py
-
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.db.models import Q
+from django.utils import timezone
 
-from .models import Benefit, BenefitUsage
-from .serializers import BenefitSerializer, BenefitUsageSerializer
+from .models import Benefit, UserBenefit
+from .serializers import BenefitSerializer, UserBenefitSerializer
 
+class BenefitDashboardView(viewsets.ViewSet):
+    """
+    Dashboard view for member benefits
+    """
+    permission_classes = [permissions.IsAuthenticated]
 
-class BenefitViewSet(viewsets.ModelViewSet):
-    """ViewSet for benefit management"""
-    queryset = Benefit.objects.all().order_by('membership_level_required')
-    serializer_class = BenefitSerializer
-    
-    def get_permissions(self):
-        """Set permissions based on action"""
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
-        return [IsAuthenticated()]
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def list(self, request):
+        user = request.user
         
-        # For unauthenticated users, return an empty queryset
-        if not self.request.user.is_authenticated:
-            return Benefit.objects.none()
+        # Get all active benefits
+        all_benefits = Benefit.objects.filter(is_active=True)
+        
+        # Get user's benefits
+        user_benefits = UserBenefit.objects.filter(user=user)
+        
+        # Categorize benefits
+        utilized_benefits = user_benefits.filter(is_active=True)
+        unutilized_benefits = all_benefits.exclude(
+            id__in=user_benefits.values_list('benefit_id', flat=True)
+        )
+        
+        # Group benefits by category
+        benefits_by_category = {}
+        for benefit in all_benefits:
+            if benefit.category not in benefits_by_category:
+                benefits_by_category[benefit.category] = {
+                    'utilized': [],
+                    'unutilized': []
+                }
             
-        # Regular users can only see active benefits
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(is_active=True)
+            user_benefit = user_benefits.filter(benefit=benefit).first()
+            serialized_benefit = UserBenefitSerializer(user_benefit).data if user_benefit else {
+                'benefit': BenefitSerializer(benefit).data,
+                'id': None,
+                'is_active': False
+            }
             
-            # Filter by membership level
-            profile = self.request.user.profile
-            if profile and profile.current_membership:
-                membership_type = profile.current_membership.membership_type
-                if membership_type == 'community':
-                    queryset = queryset.filter(
-                        Q(membership_level_required='all') | 
-                        Q(membership_level_required='community')
-                    )
-                elif membership_type == 'key_access':
-                    queryset = queryset.filter(
-                        Q(membership_level_required='all') | 
-                        Q(membership_level_required='community') | 
-                        Q(membership_level_required='key_access')
-                    )
-                elif membership_type == 'creative_workspace':
-                    # Creative workspace members can access all benefits
-                    pass
+            if user_benefit and user_benefit.is_active:
+                benefits_by_category[benefit.category]['utilized'].append(serialized_benefit)
             else:
-                # Non-members can't access any benefits
-                queryset = queryset.none()
-                
-        # Apply filter by membership level (admin only)
-        if self.request.user.is_staff:
-            membership_level = self.request.query_params.get('membership_level', None)
-            if membership_level:
-                queryset = queryset.filter(membership_level_required=membership_level)
-                
-        return queryset
-
-
-class BenefitUsageViewSet(viewsets.ModelViewSet):
-    """ViewSet for tracking benefit usage"""
-    serializer_class = BenefitUsageSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        # The IsAuthenticated permission ensures this is only called by authenticated users
+                benefits_by_category[benefit.category]['unutilized'].append(serialized_benefit)
         
-        # Admin can see all usage records
-        if self.request.user.is_staff:
-            queryset = BenefitUsage.objects.all()
+        return Response({
+            'total_benefits': all_benefits.count(),
+            'utilized_benefits': UserBenefitSerializer(utilized_benefits, many=True).data,
+            'unutilized_benefits': UserBenefitSerializer(unutilized_benefits, many=True).data,
+            'benefits_by_category': benefits_by_category
+        })
+
+    @action(detail=False, methods=['POST'], url_path='(?P<benefit_id>\d+)/activate')
+    def activate_benefit(self, request, benefit_id=None):
+        """
+        Activate a specific benefit for the user
+        """
+        try:
+            benefit = Benefit.objects.get(id=benefit_id, is_active=True)
             
-            # Filter by user if provided
-            user_id = self.request.query_params.get('user_id', None)
-            if user_id:
-                queryset = queryset.filter(user_id=user_id)
-                
-            # Filter by benefit if provided
-            benefit_id = self.request.query_params.get('benefit_id', None)
-            if benefit_id:
-                queryset = queryset.filter(benefit_id=benefit_id)
-                
-            return queryset
+            # Create or get user benefit
+            user_benefit, created = UserBenefit.objects.get_or_create(
+                user=request.user, 
+                benefit=benefit,
+                defaults={
+                    'is_active': True,
+                    'activated_on': timezone.now(),
+                    'expires_on': timezone.now() + timezone.timedelta(days=365)  # Example expiry
+                }
+            )
             
-        # Regular users can only see their own usage
-        return BenefitUsage.objects.filter(user=self.request.user)
-    
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-    
-    @action(detail=False, methods=['get'])
-    def my_benefits(self, request):
-        """Get all benefit usage for the current user"""
-        usage = self.get_queryset()
-        serializer = self.get_serializer(usage, many=True)
-        return Response(serializer.data)
+            if not created and not user_benefit.is_active:
+                user_benefit.is_active = True
+                user_benefit.activated_on = timezone.now()
+                user_benefit.expires_on = timezone.now() + timezone.timedelta(days=365)
+                user_benefit.save()
+            
+            return Response(
+                UserBenefitSerializer(user_benefit).data, 
+                status=status.HTTP_200_OK
+            )
+        
+        except Benefit.DoesNotExist:
+            return Response(
+                {'error': 'Benefit not found.'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
