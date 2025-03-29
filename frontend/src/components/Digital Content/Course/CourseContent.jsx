@@ -1,4 +1,4 @@
-import styles from "./CourseContent.module.css";
+import styles from "./CourseCertificate.module.css";
 
 const CourseContent = ({ currentLesson, courseTitle }) => {
   const { module, lesson } = currentLesson;

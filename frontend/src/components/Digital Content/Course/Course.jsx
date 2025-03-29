@@ -5,7 +5,7 @@ import CourseHeader from "./CourseHeader";
 import CourseSidebar from "./CourseSidebar";
 import CourseContent from "./CourseContent";
 import CourseFooter from "./CourseFooter";
-import CourseAssessment from "./CourseAssessment";
+import CourseAssessment from "./CourseAssesment";
 import styles from "./Course.module.css";
 
 const Course = () => {

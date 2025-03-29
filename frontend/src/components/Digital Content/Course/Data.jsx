@@ -1,6 +1,6 @@
 export const CoursesData = [
   {
-    id: "comunity-leadership-fundamentals",
+    id: "1",
     title: "Community Leadership Fundamentals",
     category: "Leadership",
     description:
@@ -317,7 +317,7 @@ export const findCourseById = (id) => {
 // For disabled courses that require upgrade
 export const disabledCourses = [
   {
-    id: "course-456",
+    id: "dmc",
     title: "Digital Marketing for Communities",
     category: "Marketing",
     description:
@@ -329,7 +329,7 @@ export const disabledCourses = [
     reasonDisabled: "premium",
   },
   {
-    id: "course-789",
+    id: "cwf",
     title: "Community Workshop Facilitation",
     category: "Leadership",
     description: "Learn how to plan and run effective community workshops",

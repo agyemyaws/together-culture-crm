@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CourseCertificate from "./CourseCertificate";
-import styles from "./CourseAssessment.module.css";
+import styles from "./CourseAssesment.module.css";
 
 const CourseAssessment = ({
   courseState,
