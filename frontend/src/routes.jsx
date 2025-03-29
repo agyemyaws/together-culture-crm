@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import MembershipPage from "./pages/MembershipPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import DigitalContentPage from "./pages/digital_content";
+import CoursePage from "./pages/CoursePage";
 import { ACCESS_TOKEN } from "./constants";
 import { useUser } from "./context/UserContext";
 
@@ -96,6 +97,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <DigitalContentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/course/:courseId"
+        element={
+          <ProtectedRoute>
+            <CoursePage />
           </ProtectedRoute>
         }
       />

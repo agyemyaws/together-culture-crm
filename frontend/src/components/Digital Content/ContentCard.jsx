@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./ContentCard.module.css";
 
 const ContentCard = ({ item, featured = false }) => {
+  const navigate = useNavigate();
+
   // Determine CSS classes based on content type
   const getTypeClass = (type) => {
     switch (type) {
@@ -25,6 +28,22 @@ const ContentCard = ({ item, featured = false }) => {
       return "Watch";
     } else {
       return "View";
+    }
+  };
+
+  // Handle button click based on content type
+  const handleButtonClick = () => {
+    if (item.type === "course") {
+      // Navigate to course page with the course ID
+      navigate(`/course/${item.id}`);
+    } else if (item.type === "template") {
+      // Handle template download
+      console.log("Downloading template:", item.title);
+      // Add template download logic here
+    } else if (item.type === "webinar") {
+      // Handle webinar viewing
+      console.log("Watching webinar:", item.title);
+      // Add webinar viewing logic here
     }
   };
 
@@ -104,7 +123,10 @@ const ContentCard = ({ item, featured = false }) => {
           </div>
         </div>
 
-        <button className={`${styles.button} ${getTypeClass(item.type)}`}>
+        <button
+          className={`${styles.button} ${getTypeClass(item.type)}`}
+          onClick={handleButtonClick}
+        >
           {getButtonText()}
         </button>
       </div>
