@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styles from "./EventDetailsModal.module.css";
 import EventConfirmation from "./EventConfirmation";
 import api from "../../api";
+import axios from "axios";
 
 const EventDetailsModal = ({ event, onClose, onRegister, isRegistered, membershipLevel }) => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -192,11 +193,64 @@ const EventDetailsModal = ({ event, onClose, onRegister, isRegistered, membershi
     setIsRegistering(true);
     setRegistrationError(null);
     
+    // Registration data to send
+    const registrationData = {
+      event_id: event.id,
+      ...publicFormData
+    };
+    
+    console.log("Sending public registration data:", registrationData);
+    
     try {
-      const response = await api.post('/event/public-register/', {
-        event_id: event.id,
-        ...publicFormData
+      // Try a direct XMLHttpRequest to avoid any possible CORS issues
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${import.meta.env.VITE_API_URL}/event/public-registration/`, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.withCredentials = false; // Explicitly disable credentials
+      
+      // Create a promise to handle the XHR
+      const response = await new Promise((resolve, reject) => {
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve({
+                ok: true,
+                status: xhr.status,
+                data: JSON.parse(xhr.responseText)
+              });
+            } catch (e) {
+              reject(new Error("Invalid JSON response"));
+            }
+          } else {
+            try {
+              reject({
+                ok: false,
+                status: xhr.status,
+                data: JSON.parse(xhr.responseText)
+              });
+            } catch (e) {
+              reject({
+                ok: false,
+                status: xhr.status,
+                data: { error: "Unknown error occurred" }
+              });
+            }
+          }
+        };
+        
+        xhr.onerror = function() {
+          reject({
+            ok: false,
+            status: 0,
+            data: { error: "Network error occurred" }
+          });
+        };
+        
+        xhr.send(JSON.stringify(registrationData));
       });
+      
+      // If we get here, the request was successful
+      console.log("Public registration successful:", response.data);
       
       const ticket = {
         ticketNumber: response.data.ticket_number,
@@ -209,11 +263,21 @@ const EventDetailsModal = ({ event, onClose, onRegister, isRegistered, membershi
       setTicketData(ticket);
       setRegistrationComplete(true);
     } catch (err) {
-      console.error("Public registration error:", err);
-      setRegistrationError(
-        err.response?.data?.error || 
-        "Failed to register for this event. Please try again."
-      );
+      console.error("Public registration failed:", err);
+      
+      // Handle different error formats
+      let errorMessage = "Failed to register for this event. Please try again.";
+      
+      if (err.data) {
+        if (err.data.error) {
+          errorMessage = err.data.error;
+        }
+        if (err.data.details) {
+          errorMessage += err.data.details ? `: ${err.data.details}` : '';
+        }
+      }
+      
+      setRegistrationError(errorMessage);
     } finally {
       setIsRegistering(false);
     }

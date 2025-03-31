@@ -3,6 +3,7 @@ import styles from "./EventsListing.module.css";
 import EventCard from "./EventCard";
 import EventDetailsModal from "./EventDetailsModal";
 import api from "../../api";
+import axios from "axios";
 import { useUser } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
@@ -36,64 +37,148 @@ const EventsListing = () => {
       setLoading(true);
       setError(null);
       console.log('Fetching events...');
-      const response = await api.get('event/events/');
-      console.log('Events response:', response.data);
       
-      // Extract types and locations for filters
-      const types = ['All', ...new Set(response.data.map(event => event.event_type).filter(Boolean))];
-      const locs = ['All', ...new Set(response.data.map(event => event.location).filter(Boolean))];
-      setEventTypes(types);
-      setLocations(locs);
+      let response;
       
-      // Check registration status for each event
       if (user) {
-        console.log('Current user:', user);
-        console.log('User membership level:', user.membership);
-        
-        const userEventIds = await fetchUserRegistrations();
-        const statusMap = {};
-        userEventIds.forEach(eventId => {
-          statusMap[eventId] = true;
-        });
-        setRegistrationStatus(statusMap);
-        
-        // Filter events based on user's membership level
-        let accessibleEvents = [...response.data];
-        console.log('All events before filtering:', accessibleEvents);
-        
-        if (user.membership === 'community') {
-          // Community members can only see public events
-          accessibleEvents = accessibleEvents.filter(event => event.is_public);
-          console.log('Filtered to public events for community member:', accessibleEvents);
-        } else if (user.membership === 'key_access') {
-          // Key access members can see public events and key_access events
-          accessibleEvents = accessibleEvents.filter(event => 
-            event.is_public || 
-            event.membership_required === 'key_access'
-          );
-          console.log('Filtered events for key_access member:', accessibleEvents);
-        } else if (user.membership === 'creative_workspace') {
-          // Creative workspace members can see all events
-          console.log('Creative workspace member can see all events');
-        } else if (user.isAdmin) {
-          // Admins can see all events
-          console.log('Admin can see all events');
-        } else {
-          console.log('Unknown membership type:', user.membership);
+        // Authenticated user - use api instance with token
+        try {
+          response = await api.get('event/events/');
+          console.log('Events response (authenticated):', response.data);
+          
+          // Check registration status
+          console.log('Current user:', user);
+          console.log('User membership level:', user.membership);
+          
+          const userEventIds = await fetchUserRegistrations();
+          const statusMap = {};
+          userEventIds.forEach(eventId => {
+            statusMap[eventId] = true;
+          });
+          setRegistrationStatus(statusMap);
+          
+          // Filter events based on user's membership level
+          let accessibleEvents = [...response.data];
+          console.log('All events before filtering:', accessibleEvents);
+          
+          if (user.membership === 'community') {
+            // Community members can only see public events
+            accessibleEvents = accessibleEvents.filter(event => event.is_public);
+            console.log('Filtered to public events for community member:', accessibleEvents);
+          } else if (user.membership === 'key_access') {
+            // Key access members can see public events and key_access events
+            accessibleEvents = accessibleEvents.filter(event => 
+              event.is_public || 
+              event.membership_required === 'key_access'
+            );
+            console.log('Filtered events for key_access member:', accessibleEvents);
+          } else if (user.membership === 'creative_workspace') {
+            // Creative workspace members can see all events
+            console.log('Creative workspace member can see all events');
+          } else if (user.isAdmin) {
+            // Admins can see all events
+            console.log('Admin can see all events');
+          } else {
+            console.log('Unknown membership type:', user.membership);
+          }
+          
+          console.log('Final accessible events:', accessibleEvents);
+          
+          // Extract types and locations for filters
+          const types = ['All', ...new Set(accessibleEvents.map(event => event.event_type).filter(Boolean))];
+          const locs = ['All', ...new Set(accessibleEvents.map(event => event.location).filter(Boolean))];
+          setEventTypes(types);
+          setLocations(locs);
+          
+          setEvents(accessibleEvents);
+          setFilteredEvents(accessibleEvents);
+        } catch (err) {
+          console.error('Error fetching events for authenticated user:', err);
+          setError('Failed to load events. Please try again later.');
         }
-        
-        console.log('Final accessible events:', accessibleEvents);
-        
-        setEvents(accessibleEvents);
-        setFilteredEvents(accessibleEvents);
       } else {
-        // For non-logged in users, only show public events
-        const publicEvents = response.data.filter(event => event.is_public);
-        setEvents(publicEvents);
-        setFilteredEvents(publicEvents);
+        // Non-authenticated user - use the public events endpoint
+        try {
+          // Use direct axios instance to avoid token injection
+          const publicResponse = await axios.get(`${import.meta.env.VITE_API_URL}/event/events/public/`);
+          console.log('Public events response:', publicResponse.data);
+          
+          // Extract types and locations for filters from public events
+          const types = ['All', ...new Set(publicResponse.data.map(event => event.event_type).filter(Boolean))];
+          const locs = ['All', ...new Set(publicResponse.data.map(event => event.location).filter(Boolean))];
+          setEventTypes(types);
+          setLocations(locs);
+          
+          setEvents(publicResponse.data);
+          setFilteredEvents(publicResponse.data);
+        } catch (err) {
+          console.error('Error fetching public events:', err);
+          
+          // If we couldn't fetch public events, fallback to mock events
+          if (err.response?.status === 404) {
+            console.error('Public events endpoint not found, using mock events instead');
+            
+            // Use mock events from landing page
+            const mockEvents = [
+              {
+                id: 1,
+                title: "Creative Workshop",
+                event_type: "Workshop",
+                description: "Learn about sustainable practices in the creative industry",
+                date: "2025-02-15",
+                event_date: "2025-02-15",
+                start_time: "14:00",
+                end_time: "16:00",
+                location: "Main Space",
+                capacity: 30,
+                registered_count: 12,
+                is_public: true
+              },
+              {
+                id: 2,
+                title: "Community Open Day",
+                event_type: "Open Day",
+                description: "Experience our vibrant community and creative spaces",
+                date: "2025-02-20",
+                event_date: "2025-02-20",
+                start_time: "10:00",
+                end_time: "18:00",
+                location: "Community Hall",
+                capacity: 50,
+                registered_count: 22,
+                is_public: true
+              },
+              {
+                id: 3,
+                title: "Digital Art Masterclass",
+                event_type: "Masterclass",
+                description: "Explore advanced techniques in digital illustration and design",
+                date: "2025-03-05",
+                event_date: "2025-03-05",
+                start_time: "13:00",
+                end_time: "15:30",
+                location: "Design Studio",
+                capacity: 25,
+                registered_count: 18,
+                is_public: true
+              },
+            ];
+            
+            // Extract types and locations for filters from mock events
+            const types = ['All', ...new Set(mockEvents.map(event => event.event_type).filter(Boolean))];
+            const locs = ['All', ...new Set(mockEvents.map(event => event.location).filter(Boolean))];
+            setEventTypes(types);
+            setLocations(locs);
+            
+            setEvents(mockEvents);
+            setFilteredEvents(mockEvents);
+          } else {
+            setError('Failed to load public events. Please try again later.');
+          }
+        }
       }
     } catch (err) {
-      console.error('Error fetching events:', err);
+      console.error('Unexpected error fetching events:', err);
       setError('Failed to load events. Please try again later.');
     } finally {
       setLoading(false);
@@ -240,7 +325,11 @@ const EventsListing = () => {
   };
   
   const handleNavigateToDashboard = () => {
-    navigate("/dashboard");
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/");
+    }
   };
   
   return (

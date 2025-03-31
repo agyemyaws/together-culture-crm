@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     EventViewSet, AttendanceViewSet,
     MemberJourneyAPIView, MemberActivityAPIView,
-    EventFeedbackViewSet
+    EventFeedbackViewSet, PublicEventRegistrationView
 )
 
 # Create a router and register our viewsets with it
@@ -24,7 +24,14 @@ urlpatterns = [
     # Event-specific endpoints
     path('events/<int:pk>/attendees/', EventViewSet.as_view({'get': 'attendees'}), name='event-attendees'),
     path('events/statistics/', EventViewSet.as_view({'get': 'statistics'}), name='event-statistics'),
+    
+    # Public registration endpoints - use both routes for compatibility 
+    # Make the new view the primary one that should work
+    path('public-registration/', PublicEventRegistrationView.as_view(), name='public-event-registration-standalone'),
+    
+    # Legacy endpoints that we're keeping for backward compatibility
     path('public-register/', EventViewSet.as_view({'post': 'public_register'}), name='public-event-registration'),
+    path('events/public-register/', EventViewSet.as_view({'post': 'public_register'}), name='public-event-registration-alt'),
 
     # Attendance-specific endpoints
     path('register/<int:event_id>/', AttendanceViewSet.as_view({'post': 'create'}), name='register-for-event'),

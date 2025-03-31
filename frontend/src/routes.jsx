@@ -5,6 +5,7 @@ import SignupPage from "./pages/SignupPage";
 import CompleteProfilePage from "./pages/completeProfilePage";
 import DashboardPage from './pages/DashboardPage';
 import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from './pages/ProfilePage';
 import MembershipPage from './pages/MembershipPage';
@@ -54,6 +55,7 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/events" element={<EventsPage />} />
+      <Route path="/events/:eventId" element={<EventDetailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/join" element={<SignupPage />} />
       <Route path="/logout" element={<Logout />} />

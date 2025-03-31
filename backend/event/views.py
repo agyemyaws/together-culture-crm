@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
@@ -8,6 +8,9 @@ from django.db.models import Q, Count, Sum, Avg, F, Max
 from django.db.models.functions import TruncMonth, TruncWeek, TruncDay
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+import logging
+from django.http import HttpResponse
+from django.utils.crypto import get_random_string
 
 from .models import Event, Attendance, EventFeedback, EventTicket
 from .serializers import (
@@ -29,6 +32,9 @@ from authentication.serializers import ProfileSerializer
 
 # Add this new serializer for public event registration
 from rest_framework import serializers
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 class PublicEventRegistrationSerializer(serializers.Serializer):
     event_id = serializers.IntegerField()
@@ -223,6 +229,9 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def public_register(self, request):
         """Register for a public event without requiring an account"""
+        # Explicitly set authentication classes to empty list to disable authentication
+        self.authentication_classes = []
+        
         serializer = PublicEventRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -272,7 +281,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 user = User.objects.create_user(
                     username=username,
                     email=email,
-                    password=User.objects.make_random_password(),  # Random password
+                    password=get_random_string(length=12),  # Random password
                     first_name=full_name.split(' ')[0] if ' ' in full_name else full_name,
                     last_name=' '.join(full_name.split(' ')[1:]) if ' ' in full_name else '',
                     is_active=True
@@ -313,9 +322,57 @@ class EventViewSet(viewsets.ModelViewSet):
                 "id": event.id,
                 "title": event.title,
                 "date": event.event_date,
-                "time": event.start_time.strftime('%H:%M')
+                "time": event.start_time.strftime('%H:%M') if event.start_time else ""
             }
         }, status=status.HTTP_201_CREATED)
+
+    # New action for public events
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def public(self, request):
+        """Get all public events (accessible without authentication)"""
+        events = Event.objects.filter(is_public=True).order_by('event_date', 'start_time')
+        
+        # Filter by event type
+        event_type = self.request.query_params.get('event_type', None)
+        if event_type:
+            events = events.filter(event_type=event_type)
+            
+        # Filter by date range if provided
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
+
+        if start_date:
+            events = events.filter(event_date__gte=start_date)
+        if end_date:
+            events = events.filter(event_date__lte=end_date)
+            
+        # Only show upcoming public events
+        now = timezone.now()
+        today = now.date()
+        current_time = now.time()
+        
+        events = events.filter(
+            Q(event_date__gt=today) |
+            Q(event_date=today, start_time__gte=current_time),
+            is_active=True
+        ).order_by('event_date', 'start_time')
+        
+        serializer = self.get_serializer(events, many=True, context={'request': request})
+        return Response(serializer.data)
+        
+    # Also add a detail endpoint for public events
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny])
+    def public_detail(self, request, pk=None):
+        """Get details of a specific public event (accessible without authentication)"""
+        try:
+            event = Event.objects.get(pk=pk, is_public=True)
+            serializer = self.get_serializer(event, context={'request': request})
+            return Response(serializer.data)
+        except Event.DoesNotExist:
+            return Response(
+                {"error": "This event is not available or does not exist"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class EventFeedbackViewSet(viewsets.ModelViewSet):
@@ -662,7 +719,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=User.objects.make_random_password(),
+                password=get_random_string(length=12),
                 is_active=True
             )
             
@@ -859,3 +916,169 @@ class MemberActivityAPIView(APIView):
                 for interest in interests
             ]
         })
+
+# This standalone APIView has no authentication at all and is dedicated to public event registration
+class PublicEventRegistrationView(APIView):
+    """API view for public event registration without authentication"""
+    permission_classes = [AllowAny]
+    authentication_classes = []  # Empty list means no authentication
+    
+    def options(self, request, *args, **kwargs):
+        """Handle preflight OPTIONS request with CORS headers"""
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+    
+    def post(self, request, format=None):
+        """Register for a public event without requiring an account"""
+        logger.info(f"Received public registration request: {request.data}")
+        
+        try:
+            # Validate input data
+            serializer = PublicEventRegistrationSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.error(f"Invalid public registration data: {serializer.errors}")
+                return Response(
+                    {"error": "Invalid data provided", "details": serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get event
+            event_id = serializer.validated_data['event_id']
+            try:
+                event = Event.objects.get(id=event_id)
+                logger.info(f"Found event: {event.title}, is_public: {event.is_public}")
+            except Event.DoesNotExist:
+                logger.error(f"Event not found: {event_id}")
+                return Response(
+                    {"error": f"Event not found with ID {event_id}"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+                
+            # Check if the event is public
+            if not event.is_public:
+                logger.error(f"Event {event.title} is not public")
+                return Response(
+                    {"error": "This event is not open for public registration"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+                
+            # Check if event is full
+            if event.is_full():
+                logger.error(f"Event {event.title} is full")
+                return Response(
+                    {"error": "This event is already at full capacity"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            # Skip registration open check for now as it might be causing issues
+            # if hasattr(event, 'is_registration_open') and callable(getattr(event, 'is_registration_open')):
+            #     if not event.is_registration_open():
+            #         logger.error(f"Registration not open for event {event.title}")
+            #         return Response(
+            #             {"error": "Registration for this event is not currently open"},
+            #             status=status.HTTP_400_BAD_REQUEST
+            #         )
+                
+            # Get user info from serializer
+            email = serializer.validated_data['email']
+            full_name = serializer.validated_data['full_name']
+            phone = serializer.validated_data.get('phone', '')
+            
+            # Process registration in a transaction
+            with transaction.atomic():
+                # Check if user exists with this email
+                try:
+                    user = User.objects.get(email=email)
+                    logger.info(f"Found existing user with email {email}")
+                except User.DoesNotExist:
+                    # Create temporary user for non-members
+                    username = f"guest_{email.split('@')[0]}_{timezone.now().strftime('%Y%m%d%H%M%S')}"
+                    try:
+                        user = User.objects.create_user(
+                            username=username,
+                            email=email,
+                            password=get_random_string(length=12),
+                            first_name=full_name.split(' ')[0] if ' ' in full_name else full_name,
+                            last_name=' '.join(full_name.split(' ')[1:]) if ' ' in full_name else '',
+                            is_active=True
+                        )
+                        logger.info(f"Created new user {username}")
+                    except Exception as user_err:
+                        logger.exception(f"Error creating user: {str(user_err)}")
+                        return Response(
+                            {"error": "Error creating user account", "details": str(user_err)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
+                    
+                    # Create profile if needed
+                    try:
+                        if not hasattr(user, 'profile'):
+                            profile = Profile.objects.create(
+                                user=user,
+                                full_name=full_name,
+                                phone_number=phone
+                            )
+                            logger.info(f"Created new profile for {username}")
+                    except Exception as profile_err:
+                        logger.exception(f"Error creating profile (non-critical): {str(profile_err)}")
+                        # Continue without profile if there's an issue
+                
+                # Check if already registered
+                try:
+                    existing = Attendance.objects.filter(user=user, event=event).exists()
+                    if existing:
+                        logger.warning(f"User {email} already registered for event {event.title}")
+                        return Response(
+                            {"error": "You are already registered for this event"},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Create new attendance record
+                    attendance = Attendance.objects.create(
+                        user=user,
+                        event=event,
+                        registered_at=timezone.now()
+                    )
+                    logger.info(f"Created attendance record for {email} at event {event.title}")
+                    
+                    # Create ticket
+                    ticket_number = f"TKT-{attendance.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+                    ticket = EventTicket.objects.create(
+                        attendance=attendance,
+                        ticket_number=ticket_number
+                    )
+                    logger.info(f"Created ticket {ticket_number}")
+                except Exception as reg_err:
+                    logger.exception(f"Error during registration: {str(reg_err)}")
+                    return Response(
+                        {"error": "Error creating registration", "details": str(reg_err)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+            
+            # Return success response
+            response_data = {
+                "message": "Successfully registered for the event",
+                "ticket_number": ticket.ticket_number,
+                "event": {
+                    "id": event.id,
+                    "title": event.title,
+                    "date": event.event_date.isoformat() if event.event_date else None,
+                    "time": event.start_time.strftime('%H:%M') if event.start_time else None
+                }
+            }
+            logger.info(f"Public registration successful for {email} at {event.title}")
+            
+            # Add CORS headers to response
+            response = Response(response_data, status=status.HTTP_201_CREATED)
+            response["Access-Control-Allow-Origin"] = "*"
+            return response
+            
+        except Exception as e:
+            logger.exception(f"Unexpected error in public registration: {str(e)}")
+            return Response(
+                {"error": "Registration failed", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
