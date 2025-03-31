@@ -4,14 +4,16 @@ import styles from './AdminDashboard.module.css';
 import api from '../../api';
 import MembersList from './MembersList';
 import PendingApprovals from './PendingApprovals';
+import EventManagement from './EventManagement';
 
 const AdminDashboard = () => {
   const { user, isAdminMode } = useUser();
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeSection, setActiveSection] = useState('members');
   const [pendingMembers, setPendingMembers] = useState([]);
   const [allMembers, setAllMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch pending membership requests
   const fetchPendingMemberships = async () => {
@@ -43,7 +45,6 @@ const AdminDashboard = () => {
   // Fetch all members
   const fetchAllMembers = async () => {
     try {
-      // Assuming there's an endpoint for getting all users with their profiles
       const response = await api.get('/auth/members/');
       setAllMembers(response.data);
       return response.data;
@@ -57,18 +58,16 @@ const AdminDashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      if (activeTab === 'pending') {
+      if (activeSection === 'pending') {
         await fetchPendingMemberships();
-      } else if (activeTab === 'all') {
+      } else if (activeSection === 'members') {
         await fetchAllMembers();
-      } else if (activeTab === 'events') {
-        // Future implementation
       }
       setLoading(false);
     };
 
     loadData();
-  }, [activeTab]);
+  }, [activeSection]);
 
   // Handle approving a membership request
   const handleApproveMembership = async (membershipId) => {
@@ -109,57 +108,79 @@ const AdminDashboard = () => {
     );
   }
 
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'members':
+        return <MembersList members={allMembers} />;
+      case 'pending':
+        return <PendingApprovals 
+          pendingMembers={pendingMembers} 
+          onApprove={handleApproveMembership}
+          onDecline={handleDeclineMembership}
+        />;
+      case 'events':
+        return <EventManagement />;
+      default:
+        return <MembersList members={allMembers} />;
+    }
+  };
+
   return (
     <div className={styles.adminDashboard}>
-      <h1 className={styles.dashboardTitle}>Admin Dashboard</h1>
-      
+      <div className={styles.header}>
+        <h1>Admin Dashboard</h1>
+        <div className={styles.headerRight}>
+          <div className={styles.modeIndicator}>
+            Mode: <span className={styles.adminMode}>Admin</span>
+          </div>
+          <button className={styles.iconButton}>
+            <i className="fas fa-bell"></i>
+          </button>
+          <button className={styles.iconButton}>
+            <i className="fas fa-filter"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.searchBar}>
+        <i className="fas fa-search"></i>
+        <input
+          type="text"
+          placeholder="Search members, events, or activities..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       <div className={styles.tabsContainer}>
-        <button 
-          className={`${styles.tabButton} ${activeTab === 'all' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('all')}
+        <button
+          className={`${styles.tabButton} ${activeSection === 'members' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('members')}
         >
           All Members
         </button>
-        <button 
-          className={`${styles.tabButton} ${activeTab === 'pending' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('pending')}
+        <button
+          className={`${styles.tabButton} ${activeSection === 'pending' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('pending')}
         >
           Pending Approvals
         </button>
-        <button 
-          className={`${styles.tabButton} ${activeTab === 'events' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('events')}
+        <button
+          className={`${styles.tabButton} ${activeSection === 'events' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('events')}
         >
           Events
         </button>
       </div>
 
-      {error && <div className={styles.errorMessage}>{error}</div>}
-      
-      {loading ? (
-        <div className={styles.loadingIndicator}>Loading...</div>
-      ) : (
-        <div className={styles.tabContent}>
-          {activeTab === 'all' && (
-            <MembersList members={allMembers} />
-          )}
-          
-          {activeTab === 'pending' && (
-            <PendingApprovals 
-              pendingMembers={pendingMembers} 
-              onApprove={handleApproveMembership}
-              onDecline={handleDeclineMembership}
-            />
-          )}
-          
-          {activeTab === 'events' && (
-            <div className={styles.comingSoon}>
-              <h3>Events Management</h3>
-              <p>This feature is coming soon!</p>
-            </div>
-          )}
-        </div>
-      )}
+      <div className={styles.content}>
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        {loading ? (
+          <div className={styles.loadingIndicator}>Loading...</div>
+        ) : (
+          renderSection()
+        )}
+      </div>
     </div>
   );
 };
