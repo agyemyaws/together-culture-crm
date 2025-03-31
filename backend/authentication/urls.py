@@ -14,6 +14,8 @@ from authentication.views import (
     MembershipCancelView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    AllMembersView,
+    MembershipCancelView,
 )
 
 urlpatterns = [
@@ -32,10 +34,14 @@ urlpatterns = [
     path('membership/history/', MembershipHistoryView.as_view(), name='membership-history'),
     path('membership/<int:pk>/approve/', MembershipApprovalView.as_view(), name='approve-membership'),
     path('membership/<int:pk>/cancel/', MembershipCancelView.as_view(), name='cancel-membership'),
+    path('membership/<int:pk>/cancel/', MembershipCancelView.as_view(), name='cancel-membership'),
     path('membership/pending/', PendingMembershipRequestsView.as_view(), name='pending-memberships'),
     
     # Admin URLs
     path('members/', AllMembersView.as_view(), name='all-members'),
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path('password-reset/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    
+    # Admin URLs
+    path('members/', AllMembersView.as_view(), name='all-members'),
 ]

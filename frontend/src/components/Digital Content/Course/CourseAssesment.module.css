@@ -1,0 +1,120 @@
+.assessmentWrapper {
+  margin-bottom: 2rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.breadcrumbSeparator {
+  margin: 0 0.25rem;
+}
+
+.assessmentTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.assessmentContainer {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+}
+
+.assessmentDescription {
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.questionCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.questionHeader {
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.questionText {
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
+
+.optionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+}
+
+.optionInput {
+  margin-right: 0.5rem;
+}
+
+.optionLabel {
+  color: #374151;
+}
+
+.assessmentActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  color: #2563eb;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #1d4ed8;
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+}
+
+.submitButton {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background-color: #1d4ed8;
+}
