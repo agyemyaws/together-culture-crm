@@ -1,59 +1,275 @@
-.adminDashboard {
-  padding: 1.5rem;
+.dashboard {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
-.dashboardTitle {
+.sidebar {
+  background-color: white;
+  padding: 2rem;
+  border-right: 1px solid #e0e0e0;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar h2 {
+  margin: 0 0 2rem 0;
+  color: #333;
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 1.5rem;
 }
 
-.tabsContainer {
+.navigation {
   display: flex;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.tabButton {
-  padding: 0.75rem 1rem;
+.navButton {
   background: none;
   border: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
+  padding: 1rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #666;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
-.tabButton:hover {
-  color: #111827;
+.navButton:hover {
+  background-color: #f5f5f5;
+  color: #333;
 }
 
-.activeTab {
-  color: #4F46E5;
-  border-bottom: 2px solid #4F46E5;
+.navButton.active {
+  background-color: #2196F3;
+  color: white;
 }
 
-.tabContent {
-  min-height: 300px;
+.content {
+  padding: 2rem;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+}
+
+.errorMessage {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
 }
 
 .loadingIndicator {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
-  color: #6b7280;
+  height: 200px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Table styles for MembersList */
+.table {
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #333;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: #f8f8f8;
+}
+
+.adminDashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modeIndicator {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.adminMode {
+  background-color: #2196F3;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.iconButton:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.searchBar {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.searchBar i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchBar input:focus {
+  border-color: #2196F3;
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tabButton:hover {
+  color: #333;
+}
+
+.tabButton.activeTab {
+  color: #2196F3;
+}
+
+.tabButton.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #2196F3;
+}
+
+.content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+  padding: 2rem;
 }
 
 .errorMessage {
+  background-color: #ffebee;
+  color: #c62828;
   padding: 1rem;
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border-radius: 0.375rem;
+  border-radius: 4px;
   margin-bottom: 1rem;
+}
+
+.loadingIndicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Table styles for MembersList */
+.table {
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #333;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: #f8f8f8;
 }
 
 .comingSoon {
@@ -62,7 +278,6 @@
   align-items: center;
   justify-content: center;
   min-height: 300px;
-  color: #6b7280;
   text-align: center;
 }
 
