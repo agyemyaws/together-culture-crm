@@ -108,13 +108,6 @@ const EventConfirmation = ({ ticketData, onClose }) => {
           >
             <span className={styles.downloadIcon}>↓</span> Save Ticket
           </button>
-          
-          <button 
-            className={styles.calendarButton}
-            onClick={handleAddToCalendar}
-          >
-            <span className={styles.calendarIcon}>📅</span> Add to Calendar
-          </button>
         </div>
         
         {ticketData.public && (

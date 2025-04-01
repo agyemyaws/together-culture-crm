@@ -1,0 +1,81 @@
+.contentWrapper {
+  margin-bottom: 2rem;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.breadcrumbSeparator {
+  margin: 0 0.25rem;
+}
+
+.lessonTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.lessonContent {
+  max-width: none;
+}
+
+.contentBody {
+  line-height: 1.6;
+}
+
+.contentHeading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
+
+.paragraph {
+  margin-bottom: 1rem;
+  color: #4b5563;
+}
+
+.bulletList {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.bulletItem {
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+}
+
+.reflectionBox {
+  background-color: #eff6ff;
+  border-left-width: 4px;
+  border-left-color: #3b82f6;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.reflectionTitle {
+  font-weight: 500;
+  color: #1e40af;
+  margin-bottom: 0.5rem;
+}
+
+.reflectionText {
+  color: #4b5563;
+}
+
+.noContent {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  color: #6b7280;
+}

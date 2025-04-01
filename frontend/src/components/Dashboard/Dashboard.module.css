@@ -354,3 +354,24 @@
 .upgradeButton:hover {
   background-color: #e6f0ff;
 }
+
+.loadingState,
+.errorState,
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.errorState {
+  color: #e53935;
+  background-color: #ffebee;
+  border-radius: 4px;
+}
+
+.emptyState {
+  color: #666;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}

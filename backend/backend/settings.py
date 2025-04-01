@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authentication',
     'event',
+    'content',
     'rest_framework',
     'corsheaders'
 ]
