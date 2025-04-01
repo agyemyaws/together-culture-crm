@@ -4,7 +4,7 @@ import BenefitsSummary from './BenefitsSummary';
 import BenefitsGrid from './BenefitsGrid';
 import styles from './Benefits.module.css';
 
-const BenefitsDashboard = ({ benefitsData, onActivateBenefit }) => {
+const BenefitsDashboard = ({ benefitsData, onActivateBenefit, onUseBenefit }) => {
   return (
     <div className={styles['benefits-dashboard']}>
       <BenefitsSummary 
@@ -18,6 +18,7 @@ const BenefitsDashboard = ({ benefitsData, onActivateBenefit }) => {
         unusedBenefits={benefitsData.unutilized_benefits}
         categories={benefitsData.benefits_by_category}
         onActivateBenefit={onActivateBenefit}
+        onUseBenefit={onUseBenefit}
       />
     </div>
   );

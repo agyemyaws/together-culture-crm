@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import BenefitsCard from './BenefitsCard';
 import styles from './Benefits.module.css';
 
-const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBenefit }) => {
+const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBenefit, onUseBenefit }) => {
   const [activeTab, setActiveTab] = useState('all');
 
   const renderBenefits = () => {
@@ -20,6 +20,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                     benefit={benefit} 
                     isActive={true}
                     onActivateBenefit={onActivateBenefit}
+                    onUseBenefit={onUseBenefit}
                   />
                 ))
               ) : (
@@ -38,6 +39,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                     benefit={benefit} 
                     isActive={false}
                     onActivateBenefit={onActivateBenefit}
+                    onUseBenefit={onUseBenefit}
                   />
                 ))
               ) : (
@@ -60,6 +62,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                     benefit={benefit} 
                     isActive={true}
                     onActivateBenefit={onActivateBenefit}
+                    onUseBenefit={onUseBenefit}
                   />
                 ))
               ) : (
@@ -82,6 +85,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                     benefit={benefit} 
                     isActive={false}
                     onActivateBenefit={onActivateBenefit}
+                    onUseBenefit={onUseBenefit}
                   />
                 ))
               ) : (
@@ -108,6 +112,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                         benefit={benefit} 
                         isActive={true}
                         onActivateBenefit={onActivateBenefit}
+                        onUseBenefit={onUseBenefit}
                       />
                     ))}
                   </div>
@@ -124,6 +129,7 @@ const BenefitsGrid = ({ activeBenefits, unusedBenefits, categories, onActivateBe
                         benefit={benefit} 
                         isActive={false}
                         onActivateBenefit={onActivateBenefit}
+                        onUseBenefit={onUseBenefit}
                       />
                     ))}
                   </div>

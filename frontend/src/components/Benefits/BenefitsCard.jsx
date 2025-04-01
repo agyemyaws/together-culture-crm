@@ -2,21 +2,26 @@
 import React from 'react';
 import styles from './Benefits.module.css';
 
-const BenefitCard = ({ benefit, isActive, onActivateBenefit }) => {
+const BenefitCard = ({ benefit, isActive, onActivateBenefit, onUseBenefit }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Get benefit data depending on structure
+  const benefitData = benefit.benefit || benefit;
+  const benefitId = benefitData.id;
+
   return (
     <div className={`${styles['benefit-card']} ${isActive ? styles['active'] : styles['inactive']}`}>
-      <div className={styles['benefit-icon']}>
-        <i className={benefit.benefit.icon || 'fas fa-gift'}></i>
-      </div>
-      
       <div className={styles['benefit-content']}>
-        <h3>{benefit.benefit.name}</h3>
-        <p>{benefit.benefit.description}</p>
+        <div className={styles['benefit-header']}>
+          <h3>{benefitData.name}</h3>
+          <span className={styles['membership-badge']}>
+            {benefitData.membership_group_display}
+          </span>
+        </div>
+        <p>{benefitData.description}</p>
         
         {isActive && (
           <div className={styles['benefit-stats']}>
@@ -38,26 +43,29 @@ const BenefitCard = ({ benefit, isActive, onActivateBenefit }) => {
             
             <div className={styles['stat']}>
               <span className={styles['stat-label']}>Usage:</span>
-              <span className={styles['stat-value']}>{benefit.usage_count} times</span>
+              <span className={styles['stat-value']}>{benefit.usage_count || 0} times</span>
             </div>
           </div>
         )}
         
-        {!isActive && benefit.benefit.id && (
+        {!isActive && benefitId && (
           <button 
             className={styles['activate-button']}
-            onClick={() => onActivateBenefit(benefit.benefit.id)}
+            onClick={() => onActivateBenefit(benefitId)}
           >
             Activate Benefit
           </button>
         )}
+        
+        {isActive && benefit.id && (
+          <button 
+            className={styles['use-button']}
+            onClick={() => onUseBenefit(benefitId)}
+          >
+            Use Benefit
+          </button>
+        )}
       </div>
-      
-      {benefit.benefit.value && (
-        <div className={styles['benefit-value']}>
-          Value: ${benefit.benefit.value}
-        </div>
-      )}
     </div>
   );
 };

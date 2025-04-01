@@ -12,50 +12,72 @@ const Benefits = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchBenefitsData = async () => {
+    if (!isUserLoading && user) {
+      try {
+        setLoading(true);
+        
+        const response = await api.get('/api/benefits/dashboard/');
+        
+        console.log('Benefits API Response:', response.data);
+        
+        setBenefitsData(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Full Error Object:', err);
+        console.error('Error Response:', err.response);
+        
+        if (err.response && err.response.status === 401) {
+          setError('Your session has expired. Please log in again.');
+        } else {
+          setError(`Failed to load benefits data: ${err.response?.data?.error || err.message}`);
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (!user && !isUserLoading) {
+      setError('Please log in to view your benefits.');
+      setLoading(false);
+    }
+  };
+
   const handleActivateBenefit = async (benefitId) => {
     try {
+      setLoading(true);
       await api.post(`/api/benefits/dashboard/${benefitId}/activate/`);
       
-      const response = await api.get('/api/benefits/dashboard/');
-      setBenefitsData(response.data);
+      // Reload benefits data after activation
+      await fetchBenefitsData();
       
+      // Show success message
       alert('Benefit activated successfully!');
     } catch (err) {
       console.error('Error activating benefit:', err);
-      alert('Failed to activate benefit. Please try again.');
+      const errorMessage = err.response?.data?.error || 'Failed to activate benefit';
+      alert(`Error: ${errorMessage}. Please try again.`);
+      setLoading(false);
+    }
+  };
+  
+  const handleUseBenefit = async (benefitId) => {
+    try {
+      setLoading(true);
+      await api.post(`/api/benefits/dashboard/${benefitId}/use/`);
+      
+      // Reload benefits data after usage
+      await fetchBenefitsData();
+      
+      // Show success message
+      alert('Benefit used successfully!');
+    } catch (err) {
+      console.error('Error using benefit:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to use benefit';
+      alert(`Error: ${errorMessage}. Please try again.`);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchBenefitsData = async () => {
-      if (!isUserLoading && user) {
-        try {
-          setLoading(true);
-          
-          const response = await api.get('/api/benefits/dashboard/');
-          
-          console.log('Benefits API Response:', response.data);
-          
-          setBenefitsData(response.data);
-          setError(null);
-        } catch (err) {
-          console.error('Full Error Object:', err);
-          console.error('Error Response:', err.response);
-          
-          if (err.response && err.response.status === 401) {
-            setError('Your session has expired. Please log in again.');
-          } else {
-            setError(`Failed to load benefits data: ${err.message}`);
-          }
-        } finally {
-          setLoading(false);
-        }
-      } else if (!user && !isUserLoading) {
-        setError('Please log in to view your benefits.');
-        setLoading(false);
-      }
-    };
-
     fetchBenefitsData();
   }, [user, isUserLoading]);
 
@@ -81,7 +103,7 @@ const Benefits = () => {
             <p>{error}</p>
             <button 
               className={styles['retry-button']}
-              onClick={() => window.location.reload()}
+              onClick={fetchBenefitsData}
             >
               Try Again
             </button>
@@ -90,6 +112,7 @@ const Benefits = () => {
           <BenefitsDashboard 
             benefitsData={benefitsData} 
             onActivateBenefit={handleActivateBenefit}
+            onUseBenefit={handleUseBenefit}
           />
         )}
       </div>
