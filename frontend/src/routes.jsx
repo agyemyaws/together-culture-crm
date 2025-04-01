@@ -9,6 +9,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from './pages/ProfilePage';
 import MembershipPage from './pages/MembershipPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import MembersList from "./components/Dashboard/MembersList";
+import CreateDiscussion from "./components/Dashboard/CreateDiscussion";
+import DiscussionDetail from "./components/Dashboard/DiscussionDetail";
+import DiscussionsList from "./components/Dashboard/DiscussionsList";
+import MessagesList from "./components/Dashboard/MessagesList";
+import CommunityEngagement from "./components/Dashboard/CommunityEngagement";
+
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
 
@@ -89,7 +96,63 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/members"
+        element={
+          <ProtectedRoute>
+            <MembersList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create-discussion"
+        element={
+          <ProtectedRoute>
+            <CreateDiscussion />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discussions/:id"
+        element={
+          <ProtectedRoute>
+            <DiscussionDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discussions/:id"
+        element={
+          <ProtectedRoute>
+            <DiscussionDetail />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/discussions"
+        element={
+          <ProtectedRoute>
+            <DiscussionsList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/community"
+        element={
+          <ProtectedRoute>
+            <CommunityEngagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <MessagesList />
+          </ProtectedRoute>
+        }
+      />
       {/* Admin Routes */}
       <Route
         path="/admin"
