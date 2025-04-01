@@ -1,6 +1,6 @@
-import styles from "./BenefitCard.module.css";
+import styles from "./WhyJoinCard.module.css";
 
-const BenefitCard = ({ icon, title, description }) => {
+const WhyJoinCard = ({ icon, title, description }) => {
   return (
     <div className={styles.card}>
       <div className={styles.iconWrapper}>{icon}</div>
@@ -10,4 +10,4 @@ const BenefitCard = ({ icon, title, description }) => {
   );
 };
 
-export default BenefitCard;
+export default WhyJoinCard; 
