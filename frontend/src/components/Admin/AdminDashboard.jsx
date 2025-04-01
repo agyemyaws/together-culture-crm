@@ -7,6 +7,7 @@ import PendingApprovals from './PendingApprovals';
 import EventManagement from './EventManagement';
 import ContentManagement from './ContentManagement';
 import ContentEngagement from './ContentEngagement';
+import BenefitManagement from './BenefitManagement';
 
 const AdminDashboard = () => {
   const { user, isAdminMode } = useUser();
@@ -126,6 +127,8 @@ const AdminDashboard = () => {
         return <ContentManagement />;
       case 'engagement':
         return <ContentEngagement />;
+      case 'benefits':
+        return <BenefitManagement />;
       default:
         return <MembersList members={allMembers} />;
     }
@@ -179,6 +182,12 @@ const AdminDashboard = () => {
           onClick={() => setActiveSection('content')}
         >
           Digital Content
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'benefits' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('benefits')}
+        >
+          Benefit Management
         </button>
         {/* <button
           className={`${styles.tabButton} ${activeSection === 'engagement' ? styles.activeTab : ''}`}

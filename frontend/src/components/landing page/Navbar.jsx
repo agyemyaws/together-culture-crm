@@ -10,9 +10,6 @@ const Navbar = () => {
       </Link>
   
       <nav className={styles.nav}>
-        <a href="#join" className={styles.navLink}>
-          Why Join
-        </a>
         <Link to="/events" className={styles.navLink}>
           Events
         </Link>

@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'event',
     'content',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'benefits'
 ]
 
 MIDDLEWARE = [
