@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./EventsListing.module.css";
 import EventCard from "./EventCard";
 import EventDetailsModal from "./EventDetailsModal";
 import api from "../../api";
 import axios from "axios";
 import { useUser } from "../../context/UserContext";
-import { useNavigate } from "react-router-dom";
 
 const EventsListing = () => {
   const [events, setEvents] = useState([]);

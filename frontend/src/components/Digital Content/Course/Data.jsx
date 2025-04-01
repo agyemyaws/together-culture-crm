@@ -248,60 +248,22 @@ export const CoursesData = [
           question:
             "When identifying community needs, which approach is most effective?",
           options: [
-            { id: "q8a", text: "Relying solely on the leader's assessment" },
-            { id: "q8b", text: "Implementing solutions without analysis" },
+            {
+              id: "q8a",
+              text: "Surveying only the most active community members",
+            },
+            {
+              id: "q8b",
+              text: "Consulting with community stakeholders and gathering diverse perspectives",
+              correct: true,
+            },
             {
               id: "q8c",
-              text: "Conducting comprehensive needs assessments with community input",
-              correct: true,
+              text: "Focusing exclusively on quantitative metrics",
             },
             {
               id: "q8d",
-              text: "Copying strategies from other communities without adaptation",
-            },
-          ],
-        },
-        {
-          id: "q9",
-          question: "Which of the following best describes ethical leadership?",
-          options: [
-            { id: "q9a", text: "Leading primarily to benefit yourself" },
-            {
-              id: "q9b",
-              text: "Making decisions based on what's most expedient",
-            },
-            {
-              id: "q9c",
-              text: "Doing what is right according to values and principles",
-              correct: true,
-            },
-            {
-              id: "q9d",
-              text: "Following rules regardless of their consequences",
-            },
-          ],
-        },
-        {
-          id: "q10",
-          question:
-            "What is an effective strategy for recruiting new community members?",
-          options: [
-            {
-              id: "q10a",
-              text: "Making the application process as rigorous as possible",
-            },
-            {
-              id: "q10b",
-              text: "Clearly communicating the community's purpose and benefits",
-              correct: true,
-            },
-            {
-              id: "q10c",
-              text: "Promising benefits that the community cannot deliver",
-            },
-            {
-              id: "q10d",
-              text: "Focusing exclusively on quantity over quality of members",
+              text: "Implementing solutions based on the leader's personal judgment",
             },
           ],
         },
@@ -310,8 +272,23 @@ export const CoursesData = [
   },
 ];
 
+import api from "../../../api";
+
 export const findCourseById = (id) => {
-  return CoursesData.find((course) => course.id === id) || null;
+  // First try to find the course in mock data
+  const mockCourse = CoursesData.find((course) => course.id === id);
+  
+  // If we have a mock course, return it
+  if (mockCourse) {
+    return mockCourse;
+  }
+  
+  // Otherwise, we'll try to fetch from the API
+  // This is a synchronous function, so we need to return the mock data immediately
+  // and initiate an API call that will be handled in the Course component
+  
+  // The real implementation would be in the Course component with useEffect
+  return null;
 };
 
 // For disabled courses that require upgrade

@@ -5,6 +5,8 @@ import api from '../../api';
 import MembersList from './MembersList';
 import PendingApprovals from './PendingApprovals';
 import EventManagement from './EventManagement';
+import ContentManagement from './ContentManagement';
+import ContentEngagement from './ContentEngagement';
 
 const AdminDashboard = () => {
   const { user, isAdminMode } = useUser();
@@ -120,6 +122,10 @@ const AdminDashboard = () => {
         />;
       case 'events':
         return <EventManagement />;
+      case 'content':
+        return <ContentManagement />;
+      case 'engagement':
+        return <ContentEngagement />;
       default:
         return <MembersList members={allMembers} />;
     }
@@ -130,9 +136,6 @@ const AdminDashboard = () => {
       <div className={styles.header}>
         <h1>Admin Dashboard</h1>
         <div className={styles.headerRight}>
-          <div className={styles.modeIndicator}>
-            Mode: <span className={styles.adminMode}>Admin</span>
-          </div>
           <button className={styles.iconButton}>
             <i className="fas fa-bell"></i>
           </button>
@@ -171,6 +174,18 @@ const AdminDashboard = () => {
         >
           Events
         </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'content' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('content')}
+        >
+          Digital Content
+        </button>
+        {/* <button
+          className={`${styles.tabButton} ${activeSection === 'engagement' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('engagement')}
+        >
+          Content Engagement
+        </button> */}
       </div>
 
       <div className={styles.content}>

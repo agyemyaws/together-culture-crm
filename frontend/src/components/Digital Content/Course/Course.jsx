@@ -7,20 +7,115 @@ import CourseContent from "./CourseContent";
 import CourseFooter from "./CourseFooter";
 import CourseAssessment from "./CourseAssesment";
 import styles from "./Course.module.css";
+import api from "../../../api";
 
 const Course = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
 
-  // Get course data
-  const courseData = findCourseById(courseId);
+  // States
+  const [courseData, setCourseData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeContent, setActiveContent] = useState("lesson"); // 'lesson' or 'assessment'
+  const [currentLesson, setCurrentLesson] = useState(null);
+  const [courseState, setCourseState] = useState(null);
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
+  const [assessmentScore, setAssessmentScore] = useState(0);
+  const [assessmentPassed, setAssessmentPassed] = useState(false);
 
-  // If course not found, redirect
+  // Fetch course data
   useEffect(() => {
-    if (!courseData) {
-      navigate("/digital-content");
-    }
-  }, [courseData, navigate]);
+    const fetchCourseData = async () => {
+      setLoading(true);
+      
+      try {
+        // First check mock data
+        const mockCourse = findCourseById(courseId);
+        
+        if (mockCourse) {
+          setCourseData(mockCourse);
+        } else {
+          // If no mock data exists, fetch from API
+          const response = await api.get(`/content/content/${courseId}/`);
+          
+          // Convert API data to course format
+          const apiCourse = response.data;
+          
+          // Create a simple course structure if it's the first time viewing
+          // Normally this would be stored in the database with proper structure
+          const formattedCourse = {
+            id: apiCourse.id,
+            title: apiCourse.title,
+            category: apiCourse.category,
+            description: apiCourse.description || "",
+            progress: {
+              completed: apiCourse.progress?.progress_percentage || 0,
+              total: 100,
+              percentage: apiCourse.progress?.progress_percentage || 0,
+              steps: 0,
+              totalSteps: 5,
+            },
+            instructor: apiCourse.author || "Course Instructor",
+            rating: apiCourse.rating || 4.5,
+            imageUrl: apiCourse.image_url,
+            modules: [
+              {
+                id: "intro",
+                title: "Introduction",
+                lessons: [
+                  {
+                    id: "intro-1",
+                    title: "Course Introduction",
+                    completed: true,
+                    current: true,
+                    content: apiCourse.description || "Welcome to this course! This content is being loaded from the database.",
+                  },
+                ],
+              },
+              {
+                id: "module-1",
+                title: `Module 1 - ${apiCourse.title}`,
+                lessons: [
+                  {
+                    id: "module-1-1",
+                    title: "Getting Started",
+                    completed: false,
+                    content: "This is the main content of the course. In a full implementation, this would be structured course material.",
+                  },
+                ],
+              },
+            ],
+            assessment: {
+              questions: [
+                {
+                  id: "q1",
+                  question: "Sample assessment question?",
+                  options: [
+                    { id: "q1a", text: "Option A" },
+                    { id: "q1b", text: "Option B", correct: true },
+                    { id: "q1c", text: "Option C" },
+                    { id: "q1d", text: "Option D" },
+                  ],
+                },
+              ],
+            },
+          };
+          
+          setCourseData(formattedCourse);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching course:", err);
+        setError("Failed to load the course. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCourseData();
+  }, [courseId]);
 
   // Find current lesson
   const findCurrentLesson = () => {
@@ -50,14 +145,6 @@ const Course = () => {
     };
   };
 
-  // States
-  const [activeContent, setActiveContent] = useState("lesson"); // 'lesson' or 'assessment'
-  const [currentLesson, setCurrentLesson] = useState(null);
-  const [courseState, setCourseState] = useState(null);
-  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
-  const [assessmentScore, setAssessmentScore] = useState(0);
-  const [assessmentPassed, setAssessmentPassed] = useState(false);
-
   // Initialize state when course data is available
   useEffect(() => {
     if (courseData) {
@@ -65,6 +152,13 @@ const Course = () => {
       setCurrentLesson(findCurrentLesson());
     }
   }, [courseData]);
+
+  // If course data not found or error, redirect
+  useEffect(() => {
+    if (!loading && !courseData && !error) {
+      navigate("/digital-content");
+    }
+  }, [courseData, loading, navigate, error]);
 
   // Handle assessment submission
   const submitAssessment = (answers) => {
@@ -95,6 +189,17 @@ const Course = () => {
       updatedCourseData.progress.steps = updatedCourseData.progress.totalSteps;
       updatedCourseData.progress.percentage = 100;
       setCourseState(updatedCourseData);
+      
+      // Update progress in API
+      try {
+        api.post('/content/progress/', {
+          content_id: courseId,
+          progress_percentage: 100,
+          completed: true
+        });
+      } catch (error) {
+        console.error("Error updating progress:", error);
+      }
     }
   };
 
@@ -145,6 +250,17 @@ const Course = () => {
       updatedCourseData.progress.percentage = Math.round(
         (completedCount / totalCount) * 100
       );
+      
+      // Update progress in API
+      try {
+        api.post('/content/progress/', {
+          content_id: courseId,
+          progress_percentage: updatedCourseData.progress.percentage,
+          completed: updatedCourseData.progress.percentage === 100
+        });
+      } catch (error) {
+        console.error("Error updating progress:", error);
+      }
 
       // Find next lesson
       if (newLessonIndex < prevModule.lessons.length - 1) {
@@ -188,9 +304,27 @@ const Course = () => {
     setActiveContent("assessment");
   };
 
+  // If loading
+  if (loading) {
+    return <div className={styles.loading}>Loading course...</div>;
+  }
+  
+  // If error
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <h2>Error Loading Course</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate("/digital-content")}>
+          Return to Content Library
+        </button>
+      </div>
+    );
+  }
+
   // If course data not loaded yet
   if (!courseState || !currentLesson) {
-    return <div className={styles.loading}>Loading course...</div>;
+    return <div className={styles.loading}>Preparing course content...</div>;
   }
 
   return (

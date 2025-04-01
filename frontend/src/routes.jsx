@@ -12,6 +12,8 @@ import MembershipPage from './pages/MembershipPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import PasswordResetRequest from './components/auth/PasswordResetRequest';
 import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
+import DigitalContentPage from "./pages/digital_content";
+import CoursePage from "./pages/CoursePage";
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
 
@@ -92,6 +94,24 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <MembershipPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/digital-content"
+        element={
+          <ProtectedRoute>
+            <DigitalContentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/course/:courseId"
+        element={
+          <ProtectedRoute>
+            <CoursePage />
           </ProtectedRoute>
         }
       />

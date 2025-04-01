@@ -1,48 +1,38 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./DigitalContent.module.css";
+import api from "../../api";
 
 // Import child components
 import ContentFilter from "./ContentFilter";
-import FeaturedContent from "./FeaturedContent";
 import ContentGrid from "./ContentGrid";
 import ActionSection from "./ActionSection";
 import DigitalContentModal from "./DigitalContentModal";
 
-// Helper function to get relevant image based on content type and category
-const getImageForContent = (type, category) => {
-  // Map of content types and categories to relevant Unsplash images
-  const imageMap = {
-    course: {
-      Leadership:
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&h=400&fit=crop&q=80",
-      Marketing:
-        "https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=600&h=400&fit=crop&q=80",
-      Community:
-        "https://images.unsplash.com/photo-1528605105345-5344ea20e269?w=600&h=400&fit=crop&q=80",
-      default:
-        "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&h=400&fit=crop&q=80",
-    },
-    template: {
-      Events:
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&h=400&fit=crop&q=80",
-      default:
-        "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=600&h=400&fit=crop&q=80",
-    },
-    webinar: {
-      Community:
-        "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=600&h=400&fit=crop&q=80",
-      default:
-        "https://images.unsplash.com/photo-1591115765373-5207764f72e4?w=600&h=400&fit=crop&q=80",
-    },
-    default:
-      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&h=400&fit=crop&q=80",
-  };
+// Mapping function to convert backend content_type to frontend type
+const mapContentType = (backendType) => {
+  // The backend uses content_type, frontend uses type
+  return backendType;
+};
 
-  // Return the specific image for the type and category, or fall back to defaults
-  return (
-    imageMap[type]?.[category] || imageMap[type]?.default || imageMap.default
-  );
+// Mapping function for backend data to frontend format
+const mapContentItem = (backendItem) => {
+  return {
+    id: backendItem.id,
+    title: backendItem.title,
+    type: mapContentType(backendItem.content_type),
+    category: backendItem.category,
+    description: backendItem.description || "",
+    progress: backendItem.progress?.progress_percentage || 0,
+    duration: backendItem.duration || "",
+    author: backendItem.author || "Unknown Author",
+    rating: backendItem.rating || 0,
+    image: backendItem.image_url,
+    url: backendItem.url,
+    downloads: backendItem.downloads || 0,
+    views: backendItem.views || 0,
+    completed: backendItem.progress?.completed || false,
+  };
 };
 
 const DigitalContent = () => {
@@ -53,80 +43,30 @@ const DigitalContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [contentItems, setContentItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initialize content items with appropriate images
+  // Fetch content from API
   useEffect(() => {
-    const initialContentItems = [
-      {
-        id: 1,
-        title: "Community Leadership Fundamentals",
-        type: "course",
-        category: "Leadership",
-        description:
-          "Learn the essential skills needed to lead and grow community initiatives",
-        progress: 65,
-        duration: "4 hours",
-        author: "Sarah Johnson",
-        rating: 4.8,
-        featured: true,
-      },
-      {
-        id: 2,
-        title: "Event Planning Template",
-        type: "template",
-        category: "Events",
-        description:
-          "Professional template for planning community events and tracking outcomes",
-        downloads: 1243,
-        author: "Community Team",
-        rating: 4.6,
-        featured: true,
-      },
-      {
-        id: 3,
-        title: "Digital Marketing for Communities",
-        type: "course",
-        category: "Marketing",
-        description:
-          "Complete guide to promoting your community through digital channels",
-        progress: 10,
-        duration: "6 hours",
-        author: "Michael Chen",
-        rating: 4.9,
-      },
-      {
-        id: 4,
-        title: "Effective Community Engagement",
-        type: "webinar",
-        category: "Community",
-        description:
-          "Recording of our popular webinar on increasing member participation",
-        duration: "45 min",
-        author: "Elena Rodriguez",
-        views: 768,
-        rating: 4.5,
-        featured: true,
-      },
-      {
-        id: 5,
-        title: "Community Workshop Facilitation",
-        type: "course",
-        category: "Leadership",
-        description: "Learn how to plan and run effective community workshops",
-        progress: 0,
-        duration: "3 hours",
-        author: "Workshop Team",
-        rating: 4.9,
-      },
-    ];
+    const fetchContent = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/content/content/');
+        
+        // Map the backend data to the format expected by frontend components
+        const mappedItems = response.data.map(mapContentItem);
+        
+        setContentItems(mappedItems);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching content:', error);
+        setError('Failed to load digital content library. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Add images to each content item
-    const itemsWithImages = initialContentItems.map((item) => ({
-      ...item,
-      image: getImageForContent(item.type, item.category),
-    }));
-
-    setContentItems(itemsWithImages);
+    fetchContent();
   }, []);
 
   // Content type definitions for filtering
@@ -146,21 +86,55 @@ const DigitalContent = () => {
     return matchesTab && matchesSearch;
   });
 
-  // Featured content items
-  const featuredContent = contentItems.filter((item) => item.featured);
-
   // Handle request content form submission
-  const handleRequestSubmit = (data) => {
-    console.log("Content request submitted:", data);
-    alert(
-      "Your content request has been submitted. We will notify you when it's available."
-    );
+  const handleRequestSubmit = async (data) => {
+    try {
+      console.log("Content request submitted:", data);
+      // Here you could send the request to the backend API
+      // await api.post('/content/request/', data);
+      
+      alert(
+        "Your content request has been submitted. We will notify you when it's available."
+      );
+      setShowRequestModal(false);
+    } catch (error) {
+      console.error('Error submitting content request:', error);
+      alert('Failed to submit your request. Please try again later.');
+    }
   };
 
   // Handle navigation back to dashboard
   const handleBackToDashboard = () => {
     navigate("/dashboard");
   };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading digital content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <h2>Error Loading Content</h2>
+          <p>{error}</p>
+          <button 
+            className={styles.backButton} 
+            onClick={handleBackToDashboard}
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -185,13 +159,6 @@ const DigitalContent = () => {
         setSearchQuery={setSearchQuery}
         contentTypes={contentTypes}
       />
-
-      {/* Featured Content Section */}
-      {activeTab === "all" &&
-        searchQuery === "" &&
-        featuredContent.length > 0 && (
-          <FeaturedContent featuredContent={featuredContent} />
-        )}
 
       {/* Content Grid */}
       <ContentGrid

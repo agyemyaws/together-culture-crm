@@ -25,10 +25,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       path: "/community",
       label: "Community",
     },
-    {
-      path: "/membership",
-      label: "Membership",
-    },
   ];
 
   // Function to render the appropriate icon based on the menu item
