@@ -30,6 +30,10 @@ from authentication.views import (
     LikeReplyView,
     DislikeReplyView,
     ForwardMessageView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
+    AllMembersView,
+    MembershipCancelView,
 )
 
 urlpatterns = [
@@ -46,6 +50,7 @@ urlpatterns = [
     path('membership/request/', MembershipRequestView.as_view(), name='request-membership'),
     path('membership/history/', MembershipHistoryView.as_view(), name='membership-history'),
     path('membership/<int:pk>/approve/', MembershipApprovalView.as_view(), name='approve-membership'),
+    path('membership/<int:pk>/cancel/', MembershipCancelView.as_view(), name='cancel-membership'),
     path('membership/<int:pk>/cancel/', MembershipCancelView.as_view(), name='cancel-membership'),
     path('membership/pending/', PendingMembershipRequestsView.as_view(), name='pending-memberships'),
     
@@ -75,4 +80,9 @@ urlpatterns = [
     path('replies/<int:reply_id>/dislike/', DislikeReplyView.as_view(), name='dislike-reply'),
     path("messages/<int:message_id>/forward/", ForwardMessageView.as_view(), name="forward-message"),
 
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    
+    # Admin URLs
+    path('members/', AllMembersView.as_view(), name='all-members'),
 ]

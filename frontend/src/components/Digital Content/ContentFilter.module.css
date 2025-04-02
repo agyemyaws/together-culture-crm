@@ -1,0 +1,106 @@
+.filterContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.searchContainer {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.searchBox {
+  position: relative;
+  width: 100%;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 45px 14px 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #f8fafc;
+}
+
+.searchInput:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.tabButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border: none;
+  background-color: #f1f5f9;
+  color: #475569;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tabButton:hover {
+  background-color: #e2e8f0;
+  color: black;
+}
+
+.allActive {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.courseActive {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.templateActive {
+  background-color: #10b981;
+  color: white;
+}
+
+.webinarActive {
+  background-color: #f97316;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .filterContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .searchContainer {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .tabsContainer {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

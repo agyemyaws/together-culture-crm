@@ -1,0 +1,150 @@
+.certificateContainer {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+}
+
+.resultBox {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1.5rem;
+}
+
+.passedBox {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.failedBox {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.resultTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.passedBox .resultTitle {
+  color: #065f46;
+}
+
+.failedBox .resultTitle {
+  color: #b91c1c;
+}
+
+.resultText {
+  color: #374151;
+}
+
+.certificateTitle {
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+}
+
+.certificateText {
+  margin-bottom: 1rem;
+  color: #4b5563;
+}
+
+.certificateCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.certificateInfo {
+  display: flex;
+  align-items: center;
+}
+
+.certificateIconWrapper {
+  margin-right: 1rem;
+}
+
+.certificateIcon {
+  width: 3rem;
+  height: 3rem;
+  color: #10b981;
+}
+
+.certificateName {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.certificateDate {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.downloadButton {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.downloadButton:hover {
+  background-color: #1d4ed8;
+}
+
+.certificateActions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  color: #2563eb;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #1d4ed8;
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+}
+
+.browseButton,
+.retryButton {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.browseButton:hover,
+.retryButton:hover {
+  background-color: #1d4ed8;
+}
