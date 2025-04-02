@@ -325,7 +325,6 @@ class MembershipRequestSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-
 class ReplySerializer(serializers.ModelSerializer):
     author = serializers.CharField(source='author.username', read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
@@ -404,3 +403,16 @@ class MessageSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return obj.liked_by.filter(id=user.id).exists()
         return False
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    password = serializers.CharField(min_length=8, write_only=True)
+    confirm_password = serializers.CharField(min_length=8, write_only=True)
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError({
+                "confirm_password": "Passwords do not match"
+            })
+        return data

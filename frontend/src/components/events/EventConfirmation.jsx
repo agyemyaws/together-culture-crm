@@ -13,6 +13,25 @@ const EventConfirmation = ({ ticketData, onClose }) => {
     alert("Event added to calendar");
   };
   
+  // Format date for display
+  const formatEventDate = () => {
+    if (ticketData.event.event_date) {
+      return new Date(ticketData.event.event_date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    
+    // Fallback for sample data
+    return ticketData.event.date || 'Date TBD';
+  };
+  
+  // Format time for display
+  const formatEventTime = () => {
+    return ticketData.event.start_time || ticketData.event.time || 'Time TBD';
+  };
+  
   return (
     <>
       <button className={styles.closeButton} onClick={onClose}>×</button>
@@ -22,7 +41,10 @@ const EventConfirmation = ({ ticketData, onClose }) => {
           <div className={styles.confirmationIcon}>✓</div>
           <h2 className={styles.confirmationTitle}>You're confirmed!</h2>
           <p className={styles.confirmationSubtitle}>
-            Save your ticket for easy check-in
+            {ticketData.public ? 
+              'Registration details have been sent to your email' : 
+              'Save your ticket for easy check-in'
+            }
           </p>
         </div>
         
@@ -41,21 +63,23 @@ const EventConfirmation = ({ ticketData, onClose }) => {
               <div className={styles.ticketDetail}>
                 <div className={styles.detailLabel}>Date & Time</div>
                 <div className={styles.detailValue}>
-                  {ticketData.event.date}, {ticketData.event.time}
+                  {formatEventDate()}, {formatEventTime()}
                 </div>
               </div>
               
               <div className={styles.ticketDetail}>
                 <div className={styles.detailLabel}>Location</div>
                 <div className={styles.detailValue}>
-                  {ticketData.event.location}
+                  {ticketData.event.location || 'Location TBD'}
                 </div>
               </div>
               
               <div className={styles.ticketDetail}>
-                <div className={styles.detailLabel}>Member</div>
+                <div className={styles.detailLabel}>
+                  {ticketData.public ? 'Email' : 'Member'}
+                </div>
                 <div className={styles.detailValue}>
-                  {ticketData.memberName}
+                  {ticketData.public ? ticketData.email : 'Your Account'}
                 </div>
               </div>
             </div>
@@ -64,10 +88,15 @@ const EventConfirmation = ({ ticketData, onClose }) => {
               <div className={styles.qrCode}>
                 {/* This would be an actual QR code in production */}
                 <div className={styles.placeholderQR}>
-                  100 × 100
+                  QR Code
                 </div>
               </div>
-              <div className={styles.qrCodeText}>Scan at check-in</div>
+              <div className={styles.qrCodeText}>
+                {ticketData.public ? 
+                  'Present this ticket at check-in' : 
+                  'Scan at check-in'
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -79,14 +108,16 @@ const EventConfirmation = ({ ticketData, onClose }) => {
           >
             <span className={styles.downloadIcon}>↓</span> Save Ticket
           </button>
-          
-          <button 
-            className={styles.calendarButton}
-            onClick={handleAddToCalendar}
-          >
-            <span className={styles.calendarIcon}>📅</span> Add to Calendar
-          </button>
         </div>
+        
+        {ticketData.public && (
+          <div className={styles.publicRegistrationNote}>
+            <p>
+              A confirmation email has been sent to your email address. You'll need to present this
+              ticket at the event. No account is needed to attend.
+            </p>
+          </div>
+        )}
       </div>
     </>
   );

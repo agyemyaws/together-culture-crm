@@ -1,0 +1,60 @@
+.container {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+  text-align: left;
+}
+
+.searchTerm {
+  font-weight: 400;
+  color: #64748b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 24px;
+}
+
+.emptyState {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+}
+
+.emptyIcon {
+  margin: 0 auto 16px;
+  width: 48px;
+  height: 48px;
+  color: #94a3b8;
+}
+
+.emptyTitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.emptyText {
+  color: #64748b;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

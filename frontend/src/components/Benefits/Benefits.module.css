@@ -1,0 +1,262 @@
+/* components/Benefits/Benefits.module.css */
+
+.benefits-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.benefits-dashboard h1 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  color: #333;
+}
+
+.dashboard-description {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* Benefits Summary Styles */
+.benefits-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.summary-card.active {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+.summary-card.unused {
+  background-color: #fff7e6;
+  border-left: 4px solid #fa8c16;
+}
+
+.summary-card h3 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+.summary-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.usage-meter {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+}
+
+.meter-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.meter-bar {
+  height: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background-color: #1890ff;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+/* Benefits Grid Styles */
+.benefits-grid-container {
+  margin-top: 2rem;
+}
+
+.benefits-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.benefits-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.benefits-tabs button:hover {
+  background: #e0e0e0;
+}
+
+.benefits-tabs button.active {
+  background: #2196f3;
+  color: white;
+}
+
+.benefits-section, .category-section {
+  margin-bottom: 30px;
+}
+
+.benefits-section h2, .category-section h2 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.benefits-subsection h3 {
+  margin: 1rem 0;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.no-benefits {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+/* Benefit Card Styles */
+.benefit-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+}
+
+.benefit-card.active {
+  border-left: 4px solid #4caf50;
+}
+
+.benefit-card.inactive {
+  border-left: 4px solid #9e9e9e;
+}
+
+.benefit-content {
+  flex: 1;
+}
+
+.benefit-content h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.benefit-content p {
+  color: #666;
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.benefit-stats {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.stat-label {
+  color: #666;
+}
+
+.stat-value {
+  color: #333;
+  font-weight: 500;
+}
+
+.activate-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.activate-button:hover {
+  background-color: #1976d2;
+}
+
+.use-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.use-button:hover {
+  background-color: #388e3c;
+}
+
+.benefit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.benefit-header h3 {
+  margin: 0;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.membership-badge {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+  white-space: nowrap;
+}

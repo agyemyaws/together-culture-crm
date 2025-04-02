@@ -16,6 +16,19 @@ const AdminDashboard = () => {
     const [interestData, setInterestData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+import EventManagement from './EventManagement';
+import ContentManagement from './ContentManagement';
+import ContentEngagement from './ContentEngagement';
+import BenefitManagement from './BenefitManagement';
+
+const AdminDashboard = () => {
+  const { user, isAdminMode } = useUser();
+  const [activeSection, setActiveSection] = useState('members');
+  const [pendingMembers, setPendingMembers] = useState([]);
+  const [allMembers, setAllMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
     // Fetch pending membership requests
     const fetchPendingMemberships = async () => {
@@ -41,7 +54,6 @@ const AdminDashboard = () => {
             return [];
         }
     };
-
     // Fetch all members
     const fetchAllMembers = async () => {
         try {
@@ -87,6 +99,32 @@ const AdminDashboard = () => {
             return null;
         }
     };
+  // Fetch all members
+  const fetchAllMembers = async () => {
+    try {
+      const response = await api.get('/auth/members/');
+      setAllMembers(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all members:', error);
+      setError('Failed to load member list.');
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      if (activeSection === 'pending') {
+        await fetchPendingMemberships();
+      } else if (activeSection === 'members') {
+        await fetchAllMembers();
+      }
+      setLoading(false);
+    };
+
+    loadData();
+  }, [activeSection]);
 
     // Fetch interest categorization
     const fetchInterestData = async () => {
@@ -228,6 +266,102 @@ const AdminDashboard = () => {
             )}
         </div>
     );
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'members':
+        return <MembersList members={allMembers} />;
+      case 'pending':
+        return <PendingApprovals 
+          pendingMembers={pendingMembers} 
+          onApprove={handleApproveMembership}
+          onDecline={handleDeclineMembership}
+        />;
+      case 'events':
+        return <EventManagement />;
+      case 'content':
+        return <ContentManagement />;
+      case 'engagement':
+        return <ContentEngagement />;
+      case 'benefits':
+        return <BenefitManagement />;
+      default:
+        return <MembersList members={allMembers} />;
+    }
+  };
+
+  return (
+    <div className={styles.adminDashboard}>
+      <div className={styles.header}>
+        <h1>Admin Dashboard</h1>
+        <div className={styles.headerRight}>
+          <button className={styles.iconButton}>
+            <i className="fas fa-bell"></i>
+          </button>
+          <button className={styles.iconButton}>
+            <i className="fas fa-filter"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.searchBar}>
+        <i className="fas fa-search"></i>
+        <input
+          type="text"
+          placeholder="Search members, events, or activities..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.tabsContainer}>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'members' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('members')}
+        >
+          All Members
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'pending' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('pending')}
+        >
+          Pending Approvals
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'events' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('events')}
+        >
+          Events
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'content' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('content')}
+        >
+          Digital Content
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeSection === 'benefits' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('benefits')}
+        >
+          Benefit Management
+        </button>
+        {/* <button
+          className={`${styles.tabButton} ${activeSection === 'engagement' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('engagement')}
+        >
+          Content Engagement
+        </button> */}
+      </div>
+
+      <div className={styles.content}>
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        {loading ? (
+          <div className={styles.loadingIndicator}>Loading...</div>
+        ) : (
+          renderSection()
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AdminDashboard;

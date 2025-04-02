@@ -5,6 +5,7 @@ import SignupPage from "./pages/SignupPage";
 import CompleteProfilePage from "./pages/completeProfilePage";
 import DashboardPage from './pages/DashboardPage';
 import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from './pages/ProfilePage';
 import MembershipPage from './pages/MembershipPage';
@@ -15,9 +16,13 @@ import DiscussionDetail from "./components/Dashboard/DiscussionDetail";
 import DiscussionsList from "./components/Dashboard/DiscussionsList";
 import MessagesList from "./components/Dashboard/MessagesList";
 import CommunityEngagement from "./components/Dashboard/CommunityEngagement";
-
+import PasswordResetRequest from './components/auth/PasswordResetRequest';
+import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
+import DigitalContentPage from "./pages/digital_content";
+import CoursePage from "./pages/CoursePage";
 import { ACCESS_TOKEN } from './constants';
 import { useUser } from './context/UserContext';
+import Benefits from "./pages/BenefitsPage";
 
 const Logout = () => {
   localStorage.clear();
@@ -59,9 +64,12 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/events" element={<EventsPage />} />
+      <Route path="/events/:eventId" element={<EventDetailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/join" element={<SignupPage />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/password-reset" element={<PasswordResetRequest />} />
+      <Route path="/password-reset/:uidb64/:token" element={<PasswordResetConfirm />} />
 
       {/* Protected Routes */}
       <Route
@@ -153,6 +161,25 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/digital-content"
+        element={
+          <ProtectedRoute>
+            <DigitalContentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/course/:courseId"
+        element={
+          <ProtectedRoute>
+            <CoursePage />
+          </ProtectedRoute>
+        }
+      />
+     
       {/* Admin Routes */}
       <Route
         path="/admin"
@@ -162,7 +189,15 @@ const AppRoutes = () => {
           </AdminRoute>
         }
       />
-
+      <Route
+        path="/benefits"  
+        element={
+          <ProtectedRoute>
+            <Benefits />
+          </ProtectedRoute>
+        }
+   
+      />
       {/* Catch all - redirect to landing page */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

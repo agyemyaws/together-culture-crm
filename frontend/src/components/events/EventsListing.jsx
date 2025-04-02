@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./EventsListing.module.css";
 import EventCard from "./EventCard";
 import EventDetailsModal from "./EventDetailsModal";
+import api from "../../api";
+import axios from "axios";
+import { useUser } from "../../context/UserContext";
 
 const EventsListing = () => {
   const [events, setEvents] = useState([]);
@@ -11,118 +15,225 @@ const EventsListing = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [registrationStatus, setRegistrationStatus] = useState({});
+  const navigate = useNavigate();
   
-  // Event types and locations for filters
-  const eventTypes = ["Workshop", "Networking", "Course", "Exhibition", "All"];
-  const locations = ["Main Space", "Community Hall", "Learning Lab", "Exhibition Hall", "All"];
+  // Get user data from context
+  const { user } = useUser();
   
-  // Sample event data - in a real app, this would come from an API
+  // Event types and locations for filters - will be populated from API data
+  const [eventTypes, setEventTypes] = useState(["All"]);
+  const [locations, setLocations] = useState(["All"]);
+  
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const sampleEvents = [
-        {
-          id: 1,
-          title: "Creative Workshop Series",
-          type: "Workshop",
-          tags: ["creative", "collaboration"],
-          date: "Feb 15, 2024",
-          time: "2:00 PM",
-          location: "Main Space",
-          registered: "12/20",
-          attendees: [{initial: "A"}, {initial: "B"}, {initial: "C"}],
-          othersRegistered: 9,
-          details: "Join us for this exciting workshop where we'll explore creative ideas and connect with fellow community members. This session will focus on collaborative techniques and innovative approaches to creative projects.",
-          bringItems: [
-            "Laptop or tablet",
-            "Any ongoing project materials",
-            "Ideas to share with the group"
-          ],
-          spacesAvailable: 8
-        },
-        {
-          id: 2,
-          title: "Community Meetup",
-          type: "Networking",
-          tags: ["networking", "community"],
-          date: "Feb 18, 2024",
-          time: "6:00 PM",
-          location: "Community Hall",
-          registered: "28/50",
-          attendees: [{initial: "A"}, {initial: "B"}, {initial: "C"}],
-          othersRegistered: 25,
-          details: "Connect with like-minded individuals from our community. Share experiences, discuss challenges, and explore potential collaborations.",
-          bringItems: [
-            "Business cards",
-            "A positive attitude",
-            "Questions for the community"
-          ],
-          spacesAvailable: 22
-        },
-        {
-          id: 3,
-          title: "Digital Marketing Masterclass",
-          type: "Course", 
-          tags: ["digital", "marketing"],
-          date: "Feb 20, 2024",
-          time: "10:00 AM",
-          location: "Learning Lab",
-          registered: "25/30",
-          attendees: [{initial: "A"}, {initial: "B"}, {initial: "C"}],
-          othersRegistered: 12,
-          details: "Learn essential digital marketing strategies to promote your creative work. This hands-on session will cover social media, content marketing, and analytics.",
-          bringItems: [
-            "Laptop",
-            "Notebook",
-            "Examples of current marketing materials"
-          ],
-          spacesAvailable: 5
-        },
-        {
-          id: 4,
-          title: "Art & Technology Showcase",
-          type: "Exhibition",
-          tags: ["art", "technology"],
-          date: "Feb 25, 2024",
-          time: "5:00 PM",
-          location: "Exhibition Hall",
-          registered: "67/100",
-          attendees: [{initial: "A"}, {initial: "B"}, {initial: "C"}],
-          othersRegistered: 64,
-          details: "Experience the fusion of art and technology in this unique exhibition. Features works from local and international artists exploring the intersection of creativity and innovation.",
-          bringItems: [
-            "Nothing required - just bring your curiosity!",
-            "Optional: business cards for networking"
-          ],
-          spacesAvailable: 33
-        }
-      ];
+    fetchEvents();
+  }, [user]);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching events...');
       
-      setEvents(sampleEvents);
-      setFilteredEvents(sampleEvents);
+      let response;
+      
+      if (user) {
+        // Authenticated user - use api instance with token
+        try {
+          response = await api.get('event/events/');
+          console.log('Events response (authenticated):', response.data);
+          
+          // Check registration status
+          console.log('Current user:', user);
+          console.log('User membership level:', user.membership);
+          
+          const userEventIds = await fetchUserRegistrations();
+          const statusMap = {};
+          userEventIds.forEach(eventId => {
+            statusMap[eventId] = true;
+          });
+          setRegistrationStatus(statusMap);
+          
+          // Filter events based on user's membership level
+          let accessibleEvents = [...response.data];
+          console.log('All events before filtering:', accessibleEvents);
+          
+          if (user.membership === 'community') {
+            // Community members can only see public events
+            accessibleEvents = accessibleEvents.filter(event => event.is_public);
+            console.log('Filtered to public events for community member:', accessibleEvents);
+          } else if (user.membership === 'key_access') {
+            // Key access members can see public events and key_access events
+            accessibleEvents = accessibleEvents.filter(event => 
+              event.is_public || 
+              event.membership_required === 'key_access'
+            );
+            console.log('Filtered events for key_access member:', accessibleEvents);
+          } else if (user.membership === 'creative_workspace') {
+            // Creative workspace members can see all events
+            console.log('Creative workspace member can see all events');
+          } else if (user.isAdmin) {
+            // Admins can see all events
+            console.log('Admin can see all events');
+          } else {
+            console.log('Unknown membership type:', user.membership);
+          }
+          
+          console.log('Final accessible events:', accessibleEvents);
+          
+          // Extract types and locations for filters
+          const types = ['All', ...new Set(accessibleEvents.map(event => event.event_type).filter(Boolean))];
+          const locs = ['All', ...new Set(accessibleEvents.map(event => event.location).filter(Boolean))];
+          setEventTypes(types);
+          setLocations(locs);
+          
+          setEvents(accessibleEvents);
+          setFilteredEvents(accessibleEvents);
+        } catch (err) {
+          console.error('Error fetching events for authenticated user:', err);
+          setError('Failed to load events. Please try again later.');
+        }
+      } else {
+        // Non-authenticated user - use the public events endpoint
+        try {
+          // Use direct axios instance to avoid token injection
+          const publicResponse = await axios.get(`${import.meta.env.VITE_API_URL}/event/events/public/`);
+          console.log('Public events response:', publicResponse.data);
+          
+          // Extract types and locations for filters from public events
+          const types = ['All', ...new Set(publicResponse.data.map(event => event.event_type).filter(Boolean))];
+          const locs = ['All', ...new Set(publicResponse.data.map(event => event.location).filter(Boolean))];
+          setEventTypes(types);
+          setLocations(locs);
+          
+          setEvents(publicResponse.data);
+          setFilteredEvents(publicResponse.data);
+        } catch (err) {
+          console.error('Error fetching public events:', err);
+          
+          // If we couldn't fetch public events, fallback to mock events
+          if (err.response?.status === 404) {
+            console.error('Public events endpoint not found, using mock events instead');
+            
+            // Use mock events from landing page
+            const mockEvents = [
+              {
+                id: 1,
+                title: "Creative Workshop",
+                event_type: "Workshop",
+                description: "Learn about sustainable practices in the creative industry",
+                date: "2025-02-15",
+                event_date: "2025-02-15",
+                start_time: "14:00",
+                end_time: "16:00",
+                location: "Main Space",
+                capacity: 30,
+                registered_count: 12,
+                is_public: true
+              },
+              {
+                id: 2,
+                title: "Community Open Day",
+                event_type: "Open Day",
+                description: "Experience our vibrant community and creative spaces",
+                date: "2025-02-20",
+                event_date: "2025-02-20",
+                start_time: "10:00",
+                end_time: "18:00",
+                location: "Community Hall",
+                capacity: 50,
+                registered_count: 22,
+                is_public: true
+              },
+              {
+                id: 3,
+                title: "Digital Art Masterclass",
+                event_type: "Masterclass",
+                description: "Explore advanced techniques in digital illustration and design",
+                date: "2025-03-05",
+                event_date: "2025-03-05",
+                start_time: "13:00",
+                end_time: "15:30",
+                location: "Design Studio",
+                capacity: 25,
+                registered_count: 18,
+                is_public: true
+              },
+            ];
+            
+            // Extract types and locations for filters from mock events
+            const types = ['All', ...new Set(mockEvents.map(event => event.event_type).filter(Boolean))];
+            const locs = ['All', ...new Set(mockEvents.map(event => event.location).filter(Boolean))];
+            setEventTypes(types);
+            setLocations(locs);
+            
+            setEvents(mockEvents);
+            setFilteredEvents(mockEvents);
+          } else {
+            setError('Failed to load public events. Please try again later.');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching events:', err);
+      setError('Failed to load events. Please try again later.');
+    } finally {
       setLoading(false);
-    }, 800);
-  }, []);
+    }
+  };
+
+  const fetchUserRegistrations = async () => {
+    try {
+      // Use the correct endpoint for user registrations
+      const response = await api.get('event/attendances/my-events/');
+      console.log('User registrations:', response.data);
+      
+      // Check if the API returns the new format with registered_event_ids
+      if (response.data && response.data.registered_event_ids) {
+        return response.data.registered_event_ids;
+      }
+      
+      // Fallback to the old format if needed
+      if (response.data && Array.isArray(response.data)) {
+        return response.data.map(reg => reg.event.id);
+      }
+      
+      // If we got an unexpected format, just return an empty array
+      return [];
+    } catch (err) {
+      console.error('Error fetching user registrations:', err);
+      return [];
+    }
+  };
   
-  // Search and filter functionality
+  // Apply search and filter criteria when they change 
   useEffect(() => {
-    let results = [...events];
+    if (!events.length) return;
+    
+    // Apply filters to the already membership-filtered events
+    applyFilters(events);
+  }, [events, searchQuery, selectedType, selectedLocation]);
+  
+  // Apply search and filter functionality
+  const applyFilters = (eventsToFilter) => {
+    let results = [...eventsToFilter];
     
     // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       results = results.filter(event => 
-        event.title.toLowerCase().includes(query) || 
-        event.type.toLowerCase().includes(query) ||
-        event.tags.some(tag => tag.toLowerCase().includes(query))
+        (event.title && event.title.toLowerCase().includes(query)) || 
+        (event.event_type && event.event_type.toLowerCase().includes(query)) ||
+        (event.description && event.description.toLowerCase().includes(query))
       );
     }
     
     // Apply type filter
     if (selectedType && selectedType !== "All") {
-      results = results.filter(event => event.type === selectedType);
+      results = results.filter(event => event.event_type === selectedType);
     }
     
     // Apply location filter
@@ -131,7 +242,7 @@ const EventsListing = () => {
     }
     
     setFilteredEvents(results);
-  }, [searchQuery, selectedType, selectedLocation, events]);
+  };
   
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -161,10 +272,77 @@ const EventsListing = () => {
   
   const closeEventDetails = () => {
     setShowEventDetails(false);
+    // Refresh events to get updated registration status
+    fetchEvents();
+  };
+  
+  const handleRegisterForEvent = async (eventId) => {
+    if (!user) {
+      // Redirect to login if not logged in
+      window.location.href = '/login';
+      return;
+    }
+    
+    try {
+      console.log(`Registering for event ${eventId}`);
+      console.log('Current user membership:', user.membership);
+      console.log('User object:', user);
+      
+      // Use JSON payload instead of FormData
+      let response;
+      
+      try {
+        // First try the standard registration endpoint
+        response = await api.post(`event/register/${eventId}/`, {}, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (err) {
+        console.error('First registration attempt failed:', err.response?.data);
+        
+        // Try direct attendance creation as fallback
+        console.log('Trying direct attendance creation as fallback...');
+        
+        response = await api.post('event/attendances/', { 
+          event_id: parseInt(eventId) 
+        }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
+      console.log('Registration successful:', response.data);
+      
+      // Update registration status
+      setRegistrationStatus({...registrationStatus, [eventId]: true});
+      return true;
+    } catch (err) {
+      console.error('Error registering for event:', err);
+      if (err.response) {
+        console.error('Error status:', err.response.status);
+        console.error('Error data:', err.response.data);
+      }
+      return false;
+    }
+  };
+  
+  const handleNavigateToDashboard = () => {
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/");
+    }
   };
   
   return (
     <div className={styles.eventsContainer}>
+      <div className={styles.headerNav}>
+        <button 
+          className={styles.backToDashboardButton}
+          onClick={handleNavigateToDashboard}
+        >
+          <span className={styles.backIcon}>←</span> Back to Dashboard
+        </button>
+      </div>
+      
       <h2 className={styles.sectionTitle}>Upcoming Events</h2>
       
       {/* Search and Filters */}
@@ -227,6 +405,11 @@ const EventsListing = () => {
       <div className={styles.eventsList}>
         {loading ? (
           <div className={styles.loading}>Loading events...</div>
+        ) : error ? (
+          <div className={styles.error}>
+            {error}
+            <button onClick={fetchEvents} className={styles.retryButton}>Retry</button>
+          </div>
         ) : (
           <>
             {filteredEvents.length === 0 ? (
@@ -239,6 +422,8 @@ const EventsListing = () => {
                   key={event.id}
                   event={event}
                   onClick={() => handleEventDetails(event)}
+                  isRegistered={registrationStatus[event.id]}
+                  membershipLevel={user?.membership}
                 />
               ))
             )}
@@ -260,6 +445,9 @@ const EventsListing = () => {
         <EventDetailsModal 
           event={selectedEvent}
           onClose={closeEventDetails}
+          onRegister={handleRegisterForEvent}
+          isRegistered={registrationStatus[selectedEvent.id]}
+          membershipLevel={user?.membership}
         />
       )}
     </div>
