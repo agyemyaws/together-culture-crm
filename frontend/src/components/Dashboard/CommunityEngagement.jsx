@@ -202,9 +202,10 @@ const CommunityEngagement = () => {
           {(member.full_name || member.username)?.charAt(0).toUpperCase() || "?"}
         </div>
         <h4 className={styles.sectionTitle}>
-          {member.full_name || member.username || "Unknown Member"}
+        {member.full_name || member.username || "Unknown Member"}
         </h4>
         <p className={styles.eventMeta}>
+         interest : 
           {member.current_interests && Array.isArray(member.current_interests)
             ? member.current_interests.map((i) => i.interest_type).join(", ")
             : "No interests"}

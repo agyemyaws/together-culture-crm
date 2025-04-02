@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import fetchWithAuth from "../utils/auth"; // Import fetchWithAuth
 
-const MembersList = () => {
+const SendMembersList = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -237,4 +237,4 @@ const MembersList = () => {
   );
 };
 
-export default MembersList;
+export default SendMembersList;

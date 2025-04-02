@@ -93,7 +93,7 @@ const MembersList = ({ members }) => {
         />
       </div>
 
-      <div className={styles.membersList}>
+      <div className={styles.MembersList}>
         {filteredMembers.length === 0 ? (
           <div className={styles.emptyState}>
             <h3>No Results Found</h3>
