@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'content',
     'rest_framework',
     'corsheaders',
-    'benefits'
+    'benefits',
+    'community'
 ]
 
 MIDDLEWARE = [

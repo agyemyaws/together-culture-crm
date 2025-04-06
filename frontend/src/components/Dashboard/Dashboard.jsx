@@ -1,11 +1,9 @@
 import styles from "./Dashboard.module.css";
-import CommunityEngagement from "./CommunityEngagement";
 import RecentActivity from "./RecentActivity";
 import UserStats from "./UserStats";
 import UpcomingEvents from "./UpcomingEvents";
 import AvailableBenefits from "./AvailableBenefits";
 import QuickActions from "./QuickActions";
-
 
 const Dashboard = () => {
   return (
@@ -16,13 +14,9 @@ const Dashboard = () => {
         <div>
           <UpcomingEvents />
           <RecentActivity />
-        
         </div>
-        <QuickActions />
-        <CommunityEngagement />
         <div>
-       
-        
+          <QuickActions />
           <AvailableBenefits />
         </div>
       </div>

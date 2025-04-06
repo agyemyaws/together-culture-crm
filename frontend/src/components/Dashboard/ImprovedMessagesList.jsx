@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./Dashboard.module.css";
+import styles from "./Messages.module.css";
 import api from "../../api";
 
-const MessagesList = () => {
+const ImprovedMessagesList = () => {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,11 +29,17 @@ const MessagesList = () => {
     const fetchMessages = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/auth/messages/");
-        setConversations(response.data);
+        const response = await fetch("http://localhost:8000/auth/messages/", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch messages");
+        const data = await response.json();
+        setConversations(data);
+        setLoading(false);
       } catch (err) {
         setError(err.message || "Failed to fetch messages");
-      } finally {
         setLoading(false);
       }
     };
@@ -48,13 +54,10 @@ const MessagesList = () => {
     return () => clearInterval(intervalId);
   }, [sending]);
 
-  // Scroll to bottom of message thread when new messages arrive with smooth scrolling
+  // Scroll to bottom of message thread when new messages arrive
   useEffect(() => {
     if (messageThreadRef.current && selectedConversation) {
-      messageThreadRef.current.scrollTo({
-        top: messageThreadRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+      messageThreadRef.current.scrollTop = messageThreadRef.current.scrollHeight;
     }
   }, [selectedConversation]);
 
@@ -110,8 +113,21 @@ const MessagesList = () => {
     };
 
     try {
-      const response = await api.post("/auth/messages/send/", payload);
-      const newMessage = response.data;
+      const response = await fetch("http://localhost:8000/auth/messages/send/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send reply");
+      }
+
+      const newMessage = await response.json();
       
       // Update conversations with new message
       setConversations((prevConversations) =>
@@ -124,7 +140,7 @@ const MessagesList = () => {
       
       setReplyContent("");
     } catch (err) {
-      setSendError(err.response?.data?.error || "Failed to send reply");
+      setSendError(err.message || "Failed to send reply");
     } finally {
       setSending(false);
     }
@@ -132,8 +148,15 @@ const MessagesList = () => {
 
   const handleLikeMessage = async (messageId) => {
     try {
-      const response = await api.post(`/auth/messages/${messageId}/like/`);
-      const updatedMessage = response.data.data;
+      const response = await fetch(`http://localhost:8000/auth/messages/${messageId}/like/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to like message");
+      const result = await response.json();
+      const updatedMessage = result.data;
 
       setConversations((prevConversations) =>
         prevConversations.map((conv) =>
@@ -169,9 +192,19 @@ const MessagesList = () => {
     }
 
     try {
-      await api.post(`/auth/messages/${forwardMessageId}/forward/`, {
-        recipient_username: forwardUsername
+      const response = await fetch(`http://localhost:8000/auth/messages/${forwardMessageId}/forward/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({ recipient_username: forwardUsername }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to forward message");
+      }
 
       setForwardSuccess("Message forwarded successfully!");
       setTimeout(() => {
@@ -179,7 +212,7 @@ const MessagesList = () => {
         setForwardSuccess(null);
       }, 2000);
     } catch (err) {
-      setForwardError(err.response?.data?.error || "Failed to forward message");
+      setForwardError(err.message || "Failed to forward message");
     }
   };
 
@@ -372,7 +405,7 @@ const MessagesList = () => {
                                 ? `${latestMessage.content.slice(0, 35)}...` 
                                 : latestMessage.content
                             ) : (
-                              "No messages"
+                              "Voice call"
                             )}
                           </span>
                           {latestMessage.sender === currentUser && (
@@ -454,17 +487,15 @@ const MessagesList = () => {
               return (
                 <div key={message.id} className={styles.messageWrapper}>
                   {showDateSeparator && (
-                    <div className={styles.datesSeparator}>
-                      <div className={styles.dateSeparator}>
-                        {formatDate(message.timestamp)}
-                      </div>
+                    <div className={styles.dateSeparator}>
+                      {formatDate(message.timestamp)}
                     </div>
                   )}
                   {message.content ? (
                     <div
                       className={`${styles.messageContainer} ${isSent ? styles.sentMessage : styles.receivedMessage}`}
                     >
-                      <div className={`${styles.messageContent} ${isSent ? styles.sentContent : styles.receivedContent}`}>
+                      <div className={styles.messageContent}>
                         <p className={styles.messageText}>{message.content}</p>
                         <div className={styles.messageFooter}>
                           <span className={styles.messageTime}>
@@ -493,15 +524,29 @@ const MessagesList = () => {
                         </button>
                       </div>
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className={`${styles.voiceCallContainer} ${isSent ? styles.sentMessage : styles.receivedMessage}`}>
+                      <div className={styles.voiceCall}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <span className={styles.voiceCallText}>
+                          {isSent ? "Outgoing call" : "Incoming call"} • {message.duration || "1:23"}
+                        </span>
+                        <span className={styles.messageTime}>
+                          {formatTime(message.timestamp)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
             
             {/* Typing indicator */}
-            {typing && (
+            {!isSender && typing && (
               <div className={`${styles.messageContainer} ${styles.receivedMessage}`}>
-                <div className={`${styles.typingIndicator} ${styles.receivedContent}`}>
+                <div className={styles.typingIndicator}>
                   <span></span>
                   <span></span>
                   <span></span>
@@ -527,23 +572,16 @@ const MessagesList = () => {
                   }
                 }}
               />
-              <div className={styles.inputActions}>
-                <button className={styles.attachButton} title="Attach">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                  </svg>
-                </button>
-                <button
-                  className={styles.sendButton}
-                  onClick={handleSendReply}
-                  disabled={sending || !replyContent.trim()}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                  </svg>
-                </button>
-              </div>
+              <button
+                className={styles.sendButton}
+                onClick={handleSendReply}
+                disabled={sending || !replyContent.trim()}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -612,4 +650,4 @@ const MessagesList = () => {
   );
 };
 
-export default MessagesList; 
+export default ImprovedMessagesList; 

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Profile, Membership, Interest, Discussion, Reply, Message
+from .models import Profile, Membership, Interest
+from community.models import Discussion, Reply, Message
 from django.utils import timezone
 import logging
 

@@ -15,7 +15,7 @@ import CreateDiscussion from "./components/Dashboard/CreateDiscussion";
 import DiscussionDetail from "./components/Dashboard/DiscussionDetail";
 import DiscussionsList from "./components/Dashboard/DiscussionsList";
 import MessagesList from "./components/Dashboard/MessagesList";
-import CommunityEngagement from "./components/Dashboard/CommunityEngagement";
+import CommunityPage from "./pages/CommunityPage";
 import PasswordResetRequest from './components/auth/PasswordResetRequest';
 import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
 import DigitalContentPage from "./pages/digital_content";
@@ -129,27 +129,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/discussions/:id"
-        element={
-          <ProtectedRoute>
-            <DiscussionDetail />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/discussions"
-        element={
-          <ProtectedRoute>
-            <DiscussionsList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/community"
         element={
           <ProtectedRoute>
-            <CommunityEngagement />
+            <CommunityPage />
           </ProtectedRoute>
         }
       />
@@ -196,7 +179,6 @@ const AppRoutes = () => {
             <Benefits />
           </ProtectedRoute>
         }
-   
       />
       {/* Catch all - redirect to landing page */}
       <Route path="*" element={<Navigate to="/" />} />

@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from django.db import models
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from .models import Profile, Membership, User, ActivityLog, Discussion, Message
+from .models import Profile, Membership, User, ActivityLog
+from community.models import Discussion, Message, Reply
 from .serializers import (
     UserSignupSerializer,
     ProfileCreateSerializer,
@@ -21,8 +22,6 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, F
 from django.utils import timezone
 import logging
-from authentication.models import Reply
-Reply.objects.all()
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
