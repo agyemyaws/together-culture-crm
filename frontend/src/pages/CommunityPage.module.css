@@ -1,0 +1,53 @@
+.communityPageContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}
+
+.pageHeader {
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.headerContent {
+  max-width: 800px;
+}
+
+.pageTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.75rem;
+  background: linear-gradient(90deg, #0066ff, #5e17eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+.pageDescription {
+  font-size: 1.125rem;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .communityPageContainer {
+    padding: 0 1rem 1.5rem;
+  }
+  
+  .pageHeader {
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+  }
+  
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+  
+  .pageDescription {
+    font-size: 1rem;
+  }
+} 

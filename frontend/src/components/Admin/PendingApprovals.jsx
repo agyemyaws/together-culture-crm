@@ -188,7 +188,7 @@ const PendingApprovals = ({ pendingMembers, onApprove, onDecline }) => {
     <div className={styles.container}>
       <h2 className={styles.sectionTitle}>Pending Membership Approvals</h2>
       
-      <div className={styles.membersList}>
+      <div className={styles.MembersList}>
         {pendingMembers.map((member) => (
           <div key={member.id} className={styles.memberCard}>
             <div className={styles.memberInfo}>

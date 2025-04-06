@@ -10,6 +10,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilePage from './pages/ProfilePage';
 import MembershipPage from './pages/MembershipPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import SendMembersList from "./components/Dashboard/SendMembersList";
+import CreateDiscussion from "./components/Dashboard/CreateDiscussion";
+import DiscussionDetail from "./components/Dashboard/DiscussionDetail";
+import DiscussionsList from "./components/Dashboard/DiscussionsList";
+import MessagesList from "./components/Dashboard/MessagesList";
+import CommunityPage from "./pages/CommunityPage";
 import PasswordResetRequest from './components/auth/PasswordResetRequest';
 import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
 import DigitalContentPage from "./pages/digital_content";
@@ -98,6 +104,46 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/members"
+        element={
+          <ProtectedRoute>
+            <SendMembersList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create-discussion"
+        element={
+          <ProtectedRoute>
+            <CreateDiscussion />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/discussions/:id"
+        element={
+          <ProtectedRoute>
+            <DiscussionDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/community"
+        element={
+          <ProtectedRoute>
+            <CommunityPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <MessagesList />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/digital-content"
@@ -116,7 +162,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+     
       {/* Admin Routes */}
       <Route
         path="/admin"
@@ -133,7 +179,6 @@ const AppRoutes = () => {
             <Benefits />
           </ProtectedRoute>
         }
-   
       />
       {/* Catch all - redirect to landing page */}
       <Route path="*" element={<Navigate to="/" />} />

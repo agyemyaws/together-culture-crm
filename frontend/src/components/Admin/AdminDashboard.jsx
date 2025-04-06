@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
 import styles from './AdminDashboard.module.css';
 import api from '../../api';
@@ -8,16 +8,20 @@ import EventManagement from './EventManagement';
 import ContentManagement from './ContentManagement';
 import ContentEngagement from './ContentEngagement';
 import BenefitManagement from './BenefitManagement';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const AdminDashboard = () => {
   const { user, isAdminMode } = useUser();
   const [activeSection, setActiveSection] = useState('members');
   const [pendingMembers, setPendingMembers] = useState([]);
   const [allMembers, setAllMembers] = useState([]);
+  const [engagementData, setEngagementData] = useState(null);
+  const [funnelData, setFunnelData] = useState(null);
+  const [interestData, setInterestData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-
+  
   // Fetch pending membership requests
   const fetchPendingMemberships = async () => {
     try {
@@ -37,10 +41,8 @@ const AdminDashboard = () => {
       return response.data;
     } catch (error) {
       console.error('Error fetching pending memberships:', error);
-      console.error('Error details:', error.response?.data || error.message);
       setPendingMembers([]);
-      setError('Failed to load pending membership requests. ' + 
-              (error.response?.data?.detail || error.message || ''));
+      setError('Failed to load pending membership requests.');
       return [];
     }
   };
@@ -58,6 +60,53 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch engagement data with detailed logging
+  const fetchEngagementData = async () => {
+    try {
+      setError(null);
+      console.log('Fetching engagement data...');
+      const response = await api.get('/auth/analytics/engagement/');
+      console.log('Raw Engagement Response:', response);
+      console.log('Engagement Data:', response.data);
+      console.log('Active Users Value:', response.data?.active_users);
+      setEngagementData(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching engagement data:', error);
+      setError('Failed to load engagement analytics.');
+      return null;
+    }
+  };
+
+  // Fetch funnel data
+  const fetchFunnelData = async () => {
+    try {
+      setError(null);
+      const response = await api.get('/auth/analytics/funnel/');
+      console.log('Funnel Data Response:', response.data);
+      setFunnelData(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching funnel data:', error);
+      setError('Failed to load funnel analytics.');
+      return null;
+    }
+  };
+
+  // Fetch interest categorization
+  const fetchInterestData = async () => {
+    try {
+      setError(null);
+      const response = await api.get('/auth/analytics/interests/');
+      setInterestData(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching interest data:', error);
+      setError('Failed to load interest categorization.');
+      return null;
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -65,6 +114,12 @@ const AdminDashboard = () => {
         await fetchPendingMemberships();
       } else if (activeSection === 'members') {
         await fetchAllMembers();
+      } else if (activeSection === 'engagement') {
+        await Promise.all([
+          fetchEngagementData(),
+          fetchFunnelData(),
+          fetchInterestData()
+        ]);
       }
       setLoading(false);
     };
@@ -76,7 +131,6 @@ const AdminDashboard = () => {
   const handleApproveMembership = async (membershipId) => {
     try {
       await api.put(`/auth/membership/${membershipId}/approve/`);
-      // Update the pending memberships list
       const updatedPending = await fetchPendingMemberships();
       setPendingMembers(updatedPending);
       return true;
@@ -91,7 +145,6 @@ const AdminDashboard = () => {
   const handleDeclineMembership = async (membershipId) => {
     try {
       await api.delete(`/auth/membership/${membershipId}/cancel/`);
-      // Update the pending memberships list
       const updatedPending = await fetchPendingMemberships();
       setPendingMembers(updatedPending);
       return true;
@@ -129,6 +182,12 @@ const AdminDashboard = () => {
         return <ContentEngagement />;
       case 'benefits':
         return <BenefitManagement />;
+      case 'analytics':
+        return <AnalyticsDashboard 
+          engagementData={engagementData}
+          funnelData={funnelData}
+          interestData={interestData}
+        />;
       default:
         return <MembersList members={allMembers} />;
     }
@@ -189,12 +248,12 @@ const AdminDashboard = () => {
         >
           Benefit Management
         </button>
-        {/* <button
-          className={`${styles.tabButton} ${activeSection === 'engagement' ? styles.activeTab : ''}`}
-          onClick={() => setActiveSection('engagement')}
+        <button
+          className={`${styles.tabButton} ${activeSection === 'analytics' ? styles.activeTab : ''}`}
+          onClick={() => setActiveSection('analytics')}
         >
-          Content Engagement
-        </button> */}
+          Analytics
+        </button>
       </div>
 
       <div className={styles.content}>
@@ -209,4 +268,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
