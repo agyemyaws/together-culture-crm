@@ -56,15 +56,6 @@ const BenefitCard = ({ benefit, isActive, onActivateBenefit, onUseBenefit }) => 
             Activate Benefit
           </button>
         )}
-        
-        {isActive && benefit.id && (
-          <button 
-            className={styles['use-button']}
-            onClick={() => onUseBenefit(benefitId)}
-          >
-            Use Benefit
-          </button>
-        )}
       </div>
     </div>
   );
