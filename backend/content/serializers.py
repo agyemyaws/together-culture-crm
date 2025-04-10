@@ -1,5 +1,3 @@
-# File: backend/content/serializers.py
-
 from rest_framework import serializers
 from django.utils import timezone
 from django.db.models import Q
@@ -41,10 +39,11 @@ class DigitalContentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = DigitalContent
-        fields = ('id', 'title', 'description', 'content_type', 'access_level',
-                 'url', 'file', 'created_at', 'updated_at',
-                 'is_active', 'created_by', 'is_accessible', 'progress')
-        read_only_fields = ('created_at', 'updated_at', 'created_by')
+        fields = ('id', 'title', 'description', 'content_type', 'category', 'access_level',
+                 'author', 'duration', 'image_url', 'featured', 'rating', 'downloads', 'views',
+                 'url', 'file', 'created_at', 'updated_at', 'is_active', 'created_by', 
+                 'is_accessible', 'progress')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'downloads', 'views')
     
     def get_is_accessible(self, obj):
         """Check if content is accessible to the current user"""

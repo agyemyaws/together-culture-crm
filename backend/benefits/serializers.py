@@ -1,99 +1,63 @@
-# File: backend/benefits/serializers.py
-
 from rest_framework import serializers
-from django.utils import timezone
-from .models import Benefit, BenefitUsage
-from authentication.models import User
-
-class UserBriefSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-    membership_type = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'full_name', 'membership_type')
-    
-    def get_full_name(self, obj):
-        """Get user's full name from profile if available"""
-        try:
-            profile = obj.profile
-            if profile and profile.full_name:
-                return profile.full_name
-        except:
-            pass
-        return ""
-    
-    def get_membership_type(self, obj):
-        """Get user's current membership type"""
-        try:
-            profile = obj.profile
-            if profile and profile.current_membership:
-                return profile.current_membership.membership_type
-            return None
-        except:
-            return None
+from .models import Benefit, UserBenefit, BenefitUsageLog
 
 class BenefitSerializer(serializers.ModelSerializer):
-    is_available = serializers.SerializerMethodField()
-    has_used = serializers.SerializerMethodField()
+    """
+    Serializer for Benefit model
+    """
+    membership_group_display = serializers.CharField(source='get_membership_group_display', read_only=True)
     
     class Meta:
         model = Benefit
-        fields = ('id', 'name', 'description', 'membership_level_required',
-                 'is_active', 'is_available', 'has_used')
-        read_only_fields = ('id', 'is_active')
-    
-    def get_is_available(self, obj):
-        """Check if benefit is available to the current user"""
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-            
-        user = request.user
-        profile = user.profile
-        
-        if not profile:
-            return False
-            
-        return obj.is_available_to(profile)
-    
-    def get_has_used(self, obj):
-        """Check if the current user has used this benefit"""
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-            
-        user = request.user
-        return BenefitUsage.objects.filter(user=user, benefit=obj).exists()
+        fields = [
+            'id', 'name', 'description', 'category', 
+            'membership_group', 'membership_group_display',
+            'is_active', 'requires_activation'
+        ]
 
-class BenefitUsageSerializer(serializers.ModelSerializer):
+class UserBenefitSerializer(serializers.ModelSerializer):
+    """
+    Serializer for UserBenefit model with nested benefit details
+    """
     benefit = BenefitSerializer(read_only=True)
-    benefit_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = UserBenefit
+        fields = [
+            'id', 'benefit', 'is_active', 
+            'activated_on', 'expires_on'
+        ]
+
+class BenefitUsageLogSerializer(serializers.ModelSerializer):
+    """
+    Serializer for BenefitUsageLog model
+    """
+    benefit_name = serializers.CharField(source='benefit.name', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    logged_by_email = serializers.CharField(source='logged_by.email', read_only=True, allow_null=True)
     
     class Meta:
-        model = BenefitUsage
-        fields = ('id', 'benefit', 'benefit_id', 'used_at', 'usage_count', 'notes')
-        read_only_fields = ('id', 'used_at')
+        model = BenefitUsageLog
+        fields = [
+            'id', 'user_benefit', 'timestamp', 'notes',
+            'benefit_name', 'user_email', 'logged_by_email'
+        ]
+        read_only_fields = ['timestamp']
+
+class DetailedUserBenefitSerializer(UserBenefitSerializer):
+    """
+    Extended serializer with usage logs
+    """
+    usage_logs = BenefitUsageLogSerializer(many=True, read_only=True, source='usage_logs.all')
+    usage_count = serializers.SerializerMethodField()
+    last_used_at = serializers.SerializerMethodField()
     
-    def create(self, validated_data):
-        user = self.context['request'].user
-        benefit_id = validated_data.pop('benefit_id')
-        benefit = Benefit.objects.get(id=benefit_id)
-        
-        # Check if benefit is available
-        profile = user.profile
-        if not profile or not benefit.is_available_to(profile):
-            raise serializers.ValidationError("This benefit is not available to you.")
-        
-        # Create or update usage
-        usage, created = BenefitUsage.objects.update_or_create(
-            user=user,
-            benefit=benefit,
-            defaults={
-                'usage_count': validated_data.get('usage_count', 1),
-                'notes': validated_data.get('notes', ''),
-                'used_at': timezone.now()
-            }
-        )
-        
-        return usage
+    class Meta(UserBenefitSerializer.Meta):
+        fields = UserBenefitSerializer.Meta.fields + ['usage_logs', 'usage_count', 'last_used_at']
+    
+    def get_usage_count(self, obj):
+        return obj.usage_logs.count()
+    
+    def get_last_used_at(self, obj):
+        last_log = obj.usage_logs.order_by('-timestamp').first()
+        return last_log.timestamp if last_log else None

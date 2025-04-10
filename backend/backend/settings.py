@@ -45,9 +45,10 @@ INSTALLED_APPS = [
     'authentication',
     'event',
     'content',
-    'benefits', 
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'benefits',
+    'community'
 ]
 
 MIDDLEWARE = [
@@ -88,11 +89,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get("DB_NAME"),
-        'USER': os.environ.get("DB_USER"),
-        'PASSWORD': os.environ.get("DB_PASSWORD"),
-        'HOST': os.environ.get("DB_HOST"),
-        'PORT': os.environ.get("DB_PORT"),
+         'NAME': os.environ.get("DB_NAME"),  
+        'USER': os.environ.get("DB_USER"), 
+        'PASSWORD': os.environ.get("DB_PASSWORD" ),  
+        'HOST': os.environ.get("DB_HOST"),  
+        'PORT': os.environ.get("DB_PORT"),  
+ 
     }
 }
 
@@ -152,8 +154,8 @@ REST_FRAMEWORK = {
 
 # JWT settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -167,5 +169,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Email settings
+EMAIL_SENDER = os.environ.get('EMAIL_SENDER')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')

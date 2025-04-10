@@ -1,18 +1,18 @@
-# File: backend/benefits/urls.py
-
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BenefitViewSet, BenefitUsageViewSet
+from .views import BenefitDashboardView, BenefitAdminView, UserBenefitUsageView
 
-# Create a router and register our viewsets with it
+# Create a router for viewsets
 router = DefaultRouter()
-router.register(r'benefits', BenefitViewSet, basename='benefits')
-router.register(r'usage', BenefitUsageViewSet, basename='benefit-usage')
+# Register the dashboard viewset
+router.register(r'dashboard', BenefitDashboardView, basename='benefits-dashboard')
+# Register the admin viewset
+router.register(r'admin', BenefitAdminView, basename='benefits-admin')
+# Register the user benefit usage viewset
+router.register(r'usage', UserBenefitUsageView, basename='benefits-usage')
 
-# The API URLs are determined automatically by the router
 urlpatterns = [
+    # Include the router URLs - this will make dashboard endpoints available
+    # at /api/benefits/dashboard/
     path('', include(router.urls)),
-    
-    # Shortcut URLs for common queries
-    path('my-benefits/', BenefitUsageViewSet.as_view({'get': 'my_benefits'}), name='my-benefits'),
 ]
