@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./EventCard.module.css";
 
 const EventCard = ({
+  id,
   title,
   type,
   description,
@@ -13,7 +14,7 @@ const EventCard = ({
   const navigate = useNavigate();
 
   const handleLearnMore = () => {
-    navigate("/events");
+    navigate(`/events/${id}`);
   };
 
   return (

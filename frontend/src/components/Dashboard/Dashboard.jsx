@@ -1,9 +1,9 @@
 import styles from "./Dashboard.module.css";
-import QuickActions from "./QuickActions";
 import RecentActivity from "./RecentActivity";
 import UserStats from "./UserStats";
 import UpcomingEvents from "./UpcomingEvents";
 import AvailableBenefits from "./AvailableBenefits";
+import QuickActions from "./QuickActions";
 
 const Dashboard = () => {
   return (
