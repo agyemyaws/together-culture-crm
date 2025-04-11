@@ -8,46 +8,52 @@ A Customer Relationship Management (CRM) system for Together Culture, designed t
 - Membership tier differentiation
 - Event and digital content management
 
-
 ## Installation
 
 ### Backend Setup
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/aws-crm/together-culture-crm.git
 cd together-culture-crm
 ```
 
 2. Create and activate virtual environment
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 ```
 
 3. Install dependencies
+
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
 4. Configure environment variables
-Create a `.env` file in the backend directory with:
+   Create a `.env` file in the backend directory with:
+
 ```env
 SECRET_KEY=secret
 ```
 
 5. Run migrations
+
 ```bash
 python manage.py migrate
 ```
 
 6. Create superuser
+
 ```bash
 python manage.py createsuperuser
 ```
 
 7. Start the development server
+
 ```bash
 python manage.py runserver
 ```
@@ -55,26 +61,29 @@ python manage.py runserver
 ### Frontend Setup
 
 1. Navigate to frontend directory
+
 ```bash
 cd frontend
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Configure environment variables
-Create a `.env` file in the frontend directory with:
+   Create a `.env` file in the frontend directory with:
+
 ```env
 API_BASE_URL=http://localhost:8000/api
 ```
 
 4. Start the development server
-```bash
-npm start
-```
 
+```bash
+npm run dev
+```
 
 ## Contributing
 
