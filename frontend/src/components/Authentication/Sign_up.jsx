@@ -137,6 +137,7 @@ const SignUp = () => {
     }
   };
 
+  //this is the sign-up form
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.title}>Sign up</h1>
