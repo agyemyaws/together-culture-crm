@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -1063,3 +1065,4 @@ class MembershipManagementTestCase(TestCase):
             ).count(),
             1
         )
+>>>>>>> c3f0df6c7cbbbe77dd910317c160cfd89167a778
