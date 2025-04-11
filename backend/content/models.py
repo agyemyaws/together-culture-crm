@@ -24,7 +24,7 @@ class DigitalContent(models.Model):
         ('Other', 'Other'),
     )
     
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
     description = models.TextField(blank=True, null=True)
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPE_CHOICES, default='course')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Other')

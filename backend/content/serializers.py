@@ -44,6 +44,9 @@ class DigitalContentSerializer(serializers.ModelSerializer):
                  'url', 'file', 'created_at', 'updated_at', 'is_active', 'created_by', 
                  'is_accessible', 'progress')
         read_only_fields = ('created_at', 'updated_at', 'created_by', 'downloads', 'views')
+        extra_kwargs = {
+            'title': {'error_messages': {'unique': 'A content with this title already exists.'}}
+        }
     
     def get_is_accessible(self, obj):
         """Check if content is accessible to the current user"""
@@ -79,6 +82,19 @@ class DigitalContentSerializer(serializers.ModelSerializer):
                 'completed': False,
                 'last_accessed': None
             }
+
+    def validate_title(self, value):
+        """
+        Validate that the title is unique
+        """
+        instance = getattr(self, 'instance', None)
+        if instance is None:  # Creating new content
+            if DigitalContent.objects.filter(title=value).exists():
+                raise serializers.ValidationError("A content with this title already exists.")
+        else:  # Updating existing content
+            if DigitalContent.objects.filter(title=value).exclude(pk=instance.pk).exists():
+                raise serializers.ValidationError("A content with this title already exists.")
+        return value
 
 class ContentProgressSerializer(serializers.ModelSerializer):
     content = DigitalContentSerializer(read_only=True)
