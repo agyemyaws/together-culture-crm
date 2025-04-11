@@ -8,13 +8,26 @@ const DiscussionsList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Check for newly created discussion
+  useEffect(() => {
+    const discussionCreated = sessionStorage.getItem('discussionCreated');
+    if (discussionCreated === 'true') {
+      // Clear the flag
+      sessionStorage.removeItem('discussionCreated');
+      // Force refresh by incrementing the trigger
+      setRefreshTrigger(prev => prev + 1);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDiscussions = async () => {
       try {
+        setLoading(true);
         const url = searchQuery
-          ? `http://localhost:8000/auth/discussions/?search=${encodeURIComponent(searchQuery)}`
-          : "http://localhost:8000/auth/discussions/";
+          ? `http://localhost:8000/community/discussions/?search=${encodeURIComponent(searchQuery)}`
+          : "http://localhost:8000/community/discussions/";
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -24,13 +37,30 @@ const DiscussionsList = () => {
         const discussionsData = await response.json();
         setDiscussions(discussionsData);
         setLoading(false);
+        
+        // Check if we need to highlight a discussion
+        const newDiscussionId = sessionStorage.getItem('newDiscussionId');
+        if (newDiscussionId) {
+          // Find the element and scroll to it after render
+          setTimeout(() => {
+            const element = document.getElementById(`discussion-${newDiscussionId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+              element.classList.add(styles.highlightNew);
+              setTimeout(() => {
+                element.classList.remove(styles.highlightNew);
+              }, 3000);
+            }
+            sessionStorage.removeItem('newDiscussionId');
+          }, 500);
+        }
       } catch (err) {
         setError(err.message);
         setLoading(false);
       }
     };
     fetchDiscussions();
-  }, [searchQuery]);
+  }, [searchQuery, refreshTrigger]);
 
   if (loading) {
     return (
@@ -80,7 +110,11 @@ const DiscussionsList = () => {
       <div className={styles.repliesSection}>
         {discussions.length > 0 ? (
           discussions.map((discussion) => (
-            <div key={discussion.id} className={styles.replyCard}>
+            <div 
+              key={discussion.id} 
+              id={`discussion-${discussion.id}`} 
+              className={styles.replyCard}
+            >
               <div className={styles.replyHeader}>
                 <div className={styles.replyAuthor}>
                   <div className={styles.avatar}>
@@ -116,7 +150,26 @@ const DiscussionsList = () => {
             </div>
           ))
         ) : (
-          <p className={styles.noReplies}>No discussions found.</p>
+          <div className={styles.noDiscussionsContainer}>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="48" 
+              height="48" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ marginBottom: "1rem", color: "#9ca3af" }}
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p className={styles.noReplies}>No discussions found</p>
+            <p style={{ margin: "0.5rem 0 1rem", color: "#6b7280" }}>
+              Start a new discussion to get the conversation going!
+            </p>
+          </div>
         )}
       </div>
 

@@ -20,14 +20,14 @@ const CommunityEngagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const membersResponse = await fetch("http://localhost:8000/auth/community-members/", {
+        const membersResponse = await fetch("http://localhost:8000/community/members/", {
           headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
         });
         if (!membersResponse.ok) throw new Error("Failed to fetch members");
         const membersData = await membersResponse.json();
         setMembers(membersData);
 
-        const discussionsResponse = await fetch("http://localhost:8000/auth/recent-discussions/", {
+        const discussionsResponse = await fetch("http://localhost:8000/community/recent-discussions/", {
           headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
         });
         if (!discussionsResponse.ok) throw new Error("Failed to fetch discussions");
@@ -74,7 +74,7 @@ const CommunityEngagement = () => {
 
     const payload = { recipient_id: selectedMember.user_id, content: message };
     try {
-      const response = await fetch("http://localhost:8000/auth/messages/send/", {
+      const response = await fetch("http://localhost:8000/community/messages/send/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

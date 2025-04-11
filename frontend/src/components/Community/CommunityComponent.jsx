@@ -30,13 +30,39 @@ const CommunityComponent = () => {
       try {
         setLoading(true);
         const [membersRes, discussionsRes] = await Promise.all([
-          api.get('/auth/community-members/'),
-          api.get('/auth/discussions/')
+          api.get('/community/members/'),
+          api.get('/community/discussions/')
         ]);
         
         setMembers(membersRes.data);
         setDiscussions(discussionsRes.data);
         setLoading(false);
+        
+        // Check for newly created discussion
+        const discussionCreated = sessionStorage.getItem('discussionCreated');
+        if (discussionCreated === 'true') {
+          // Clear the flag
+          sessionStorage.removeItem('discussionCreated');
+          // Set tab to discussions
+          setActiveTab('discussions');
+          
+          // Check if we need to highlight a discussion
+          const newDiscussionId = sessionStorage.getItem('newDiscussionId');
+          if (newDiscussionId) {
+            // Find the new discussion and bring it to attention
+            setTimeout(() => {
+              const element = document.getElementById(`community-discussion-${newDiscussionId}`);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                element.classList.add(styles.highlightNew);
+                setTimeout(() => {
+                  element.classList.remove(styles.highlightNew);
+                }, 3000);
+              }
+              sessionStorage.removeItem('newDiscussionId');
+            }, 500);
+          }
+        }
       } catch (err) {
         setError(err.message || 'Failed to load community data');
         setLoading(false);
@@ -68,7 +94,7 @@ const CommunityComponent = () => {
 
     setSending(true);
     try {
-      await api.post('/auth/messages/send/', {
+      await api.post('/community/messages/send/', {
         recipient_id: selectedMember.user_id,
         content: message.trim()
       });
@@ -99,9 +125,24 @@ const CommunityComponent = () => {
 
     setSubmitting(true);
     try {
-      const response = await api.post('/auth/discussions/create/', newDiscussion);
-      setDiscussions([response.data, ...discussions]);
+      const response = await api.post('/community/discussions/create/', newDiscussion);
+      const newDiscussionData = response.data;
+      
+      // Add the new discussion to the top of the list
+      setDiscussions([newDiscussionData, ...discussions]);
       handleCloseCreateDialog();
+      
+      // Scroll to the new discussion after dialog closes
+      setTimeout(() => {
+        const element = document.getElementById(`community-discussion-${newDiscussionData.id}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          element.classList.add(styles.highlightNew);
+          setTimeout(() => {
+            element.classList.remove(styles.highlightNew);
+          }, 3000);
+        }
+      }, 300);
     } catch (err) {
       console.error('Failed to create discussion:', err);
     } finally {
@@ -126,7 +167,7 @@ const CommunityComponent = () => {
       const fetchAllMembers = async () => {
         try {
           setLoading(true);
-          const response = await api.get('/auth/all-community-members/');
+          const response = await api.get('/community/all-members/');
           setMembers(response.data);
           setLoading(false);
         } catch (err) {
@@ -381,7 +422,11 @@ const CommunityComponent = () => {
             {filteredDiscussions.length > 0 ? (
               <div className={styles.discussionsList}>
                 {displayedDiscussions.map((discussion) => (
-                  <div key={discussion.id} className={styles.discussionCard}>
+                  <div 
+                    key={discussion.id} 
+                    id={`community-discussion-${discussion.id}`}
+                    className={styles.discussionCard}
+                  >
                     <div className={styles.discussionHeader}>
                       <h4>{discussion.title}</h4>
                       <div className={styles.discussionStats}>

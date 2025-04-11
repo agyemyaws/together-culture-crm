@@ -8,7 +8,6 @@ A Customer Relationship Management (CRM) system for Together Culture, designed t
 - Membership tier differentiation
 - Event and digital content management
 
-
 ## Installation
 
 ### Backend Setup
@@ -21,8 +20,8 @@ cd together-culture-crm
 
 2. Create and activate virtual environment
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 ```
 
 3. Install dependencies
@@ -67,14 +66,23 @@ npm install
 3. Configure environment variables
 Create a `.env` file in the frontend directory with:
 ```env
-API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
 4. Start the development server
 ```bash
-npm start
+npm run dev
 ```
 
+## Project Structure
+
+```
+together-culture-crm/
+├── backend/           # Django backend application
+├── frontend/          # Vite + React frontend application
+├── .venv/            # Python virtual environment
+└── .gitignore        # Git ignore rules
+```
 
 ## Contributing
 

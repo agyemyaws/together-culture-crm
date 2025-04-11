@@ -17,7 +17,7 @@ const DiscussionDetail = () => {
   useEffect(() => {
     const fetchDiscussion = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/auth/discussions/${id}/`, {
+        const response = await fetch(`http://localhost:8000/community/discussions/${id}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
@@ -47,7 +47,7 @@ const DiscussionDetail = () => {
     setReplyError(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/auth/discussions/${id}/reply/`, {
+      const response = await fetch(`http://localhost:8000/community/discussions/${id}/reply/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,7 @@ const DiscussionDetail = () => {
         throw new Error(errorData.content?.[0] || "Failed to post reply");
       }
 
-      const updatedResponse = await fetch(`http://localhost:8000/auth/discussions/${id}/`, {
+      const updatedResponse = await fetch(`http://localhost:8000/community/discussions/${id}/`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
       });
       if (!updatedResponse.ok) throw new Error("Failed to refresh discussion");
@@ -78,7 +78,7 @@ const DiscussionDetail = () => {
 
   const handleLike = async (replyId) => {
     try {
-      const response = await fetch(`http://localhost:8000/auth/replies/${replyId}/like/`, {
+      const response = await fetch(`http://localhost:8000/community/replies/${replyId}/like/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -100,7 +100,7 @@ const DiscussionDetail = () => {
 
   const handleDislike = async (replyId) => {
     try {
-      const response = await fetch(`http://localhost:8000/auth/replies/${replyId}/dislike/`, {
+      const response = await fetch(`http://localhost:8000/community/replies/${replyId}/dislike/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,

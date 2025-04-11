@@ -2,14 +2,13 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .models import Profile, Membership, Interest
-from community.models import Discussion, Reply, Message
 from django.utils import timezone
 import logging
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-# Existing serializers (unchanged)
+# Serializer for user registration with validation
 class UserSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -23,6 +22,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
             'email': {'required': True},
         }
 
+    # Validate username meets requirements
     def validate_username(self, value):
         if len(value) < 3:
             raise serializers.ValidationError("Username must be at least 3 characters long.")
@@ -32,11 +32,13 @@ class UserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This username is already taken.")
         return value
         
+    # Check if email is already registered
     def validate_email(self, value):
         if not self.instance and User.objects.filter(email=value).exists():
             raise serializers.ValidationError("This email is already registered.")
         return value
 
+    # Ensure password meets complexity requirements
     def validate_password(self, value):
         if not any(char.isupper() for char in value):
             raise serializers.ValidationError("Password must contain at least one uppercase letter.")
@@ -46,11 +48,13 @@ class UserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Password must contain at least one number.")
         return value
 
+    # Ensure passwords match
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
 
+    # Create user account
     def create(self, validated_data):
         validated_data.pop('password2')
         user = User.objects.create_user(
@@ -60,6 +64,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         )
         return user
 
+# Serializer for creating user profiles with interests
 class ProfileCreateSerializer(serializers.ModelSerializer):
     interests = serializers.ListField(
         child=serializers.ChoiceField(choices=Interest.INTEREST_CHOICES),
@@ -77,6 +82,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             'bio': {'required': False, 'allow_blank': True},
         }
 
+    # Validate full name is present and has minimum length
     def validate_full_name(self, value):
         if not value.strip():
             raise serializers.ValidationError("Full name cannot be empty")
@@ -84,6 +90,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Full name must be at least 3 characters long")
         return value.strip()
         
+    # Validate phone number format
     def validate_phone_number(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError("Phone number is required")
@@ -95,6 +102,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Please enter a valid phone number")
         return phone
         
+    # Validate location is provided
     def validate_location(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError("Location is required")
@@ -102,6 +110,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Location must be at least 3 characters long")
         return value.strip()
         
+    # Validate bio length
     def validate_bio(self, value):
         if not value:
             return value
@@ -109,6 +118,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Bio must be less than 500 characters")
         return value.strip()
 
+    # Validate interests are provided and valid
     def validate_interests(self, value):
         if not value or len(value) == 0:
             raise serializers.ValidationError("At least one interest must be selected")
@@ -122,6 +132,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"'{interest}' is not a valid interest")
         return value
 
+    # Create profile with interests and default membership
     def create(self, validated_data):
         interests_data = validated_data.pop('interests', [])
         user = self.context['request'].user
@@ -139,6 +150,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         )
         return profile
         
+    # Update profile and replace interests if provided
     def update(self, instance, validated_data):
         interests_data = validated_data.pop('interests', None)
         for attr, value in validated_data.items():
@@ -157,6 +169,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
                 )
         return instance
 
+    # Include current interests in the output
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['interests'] = [
@@ -165,6 +178,7 @@ class ProfileCreateSerializer(serializers.ModelSerializer):
         ]
         return data
 
+# Serializer for membership information
 class MembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membership
@@ -172,6 +186,7 @@ class MembershipSerializer(serializers.ModelSerializer):
                   'approved_date')
         read_only_fields = ('start_date', 'end_date', 'is_approved', 'approved_date')
 
+# Serializer for pending membership requests with profile details
 class PendingMembershipSerializer(serializers.ModelSerializer):
     profile_details = serializers.SerializerMethodField()
     
@@ -181,6 +196,7 @@ class PendingMembershipSerializer(serializers.ModelSerializer):
                   'approved_date', 'profile_details')
         read_only_fields = ('start_date', 'end_date', 'is_approved', 'approved_date')
     
+    # Get detailed profile information for the membership request
     def get_profile_details(self, obj):
         if not obj.profile:
             return None
@@ -208,12 +224,14 @@ class PendingMembershipSerializer(serializers.ModelSerializer):
                 'full_name': 'Error retrieving user details'
             }
 
+# Serializer for user interests
 class InterestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interest
         fields = ('interest_type', 'start_date', 'end_date')
         read_only_fields = ('start_date',)
 
+# Comprehensive profile serializer with user and membership details
 class ProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
@@ -326,84 +344,6 @@ class MembershipRequestSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-class ReplySerializer(serializers.ModelSerializer):
-    author = serializers.CharField(source='author.username', read_only=True)
-    likes_count = serializers.IntegerField(read_only=True)
-    dislikes_count = serializers.IntegerField(read_only=True)
-    liked_by_me = serializers.SerializerMethodField()
-    disliked_by_me = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Reply
-        fields = ('id', 'content', 'author', 'created_at', 'likes_count', 'dislikes_count', 'liked_by_me', 'disliked_by_me')
-        read_only_fields = ('id', 'author', 'created_at', 'likes_count', 'dislikes_count', 'liked_by_me', 'disliked_by_me')
-
-    def validate_content(self, value):
-        if not value or not value.strip():
-            raise serializers.ValidationError("Content cannot be empty.")
-        if len(value.strip()) < 5:
-            raise serializers.ValidationError("Content must be at least 5 characters long.")
-        return value.strip()
-
-    def get_liked_by_me(self, obj):
-        user = self.context['request'].user if 'request' in self.context else None
-        return user and user.is_authenticated and obj.liked_by.filter(id=user.id).exists()
-
-    def get_disliked_by_me(self, obj):
-        user = self.context['request'].user if 'request' in self.context else None
-        return user and user.is_authenticated and obj.disliked_by.filter(id=user.id).exists()
-
-class DiscussionSerializer(serializers.ModelSerializer):
-    author = serializers.CharField(source='author.username', read_only=True)
-    replies = ReplySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Discussion
-        fields = ('id', 'title', 'author', 'replies_count', 'created_at', 'replies')
-        read_only_fields = ('id', 'author', 'replies_count', 'created_at', 'replies')
-
-    def validate_title(self, value):
-        if not value or not value.strip():
-            raise serializers.ValidationError("Title cannot be empty.")
-        if len(value.strip()) < 5:
-            raise serializers.ValidationError("Title must be at least 5 characters long.")
-        return value.strip()
-
-class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.StringRelatedField()
-    recipient = serializers.StringRelatedField()
-    sender_id = serializers.IntegerField(source='sender.id', read_only=True)
-    recipient_id = serializers.IntegerField(source='recipient.id', read_only=True)
-    parent_message = serializers.PrimaryKeyRelatedField(
-        queryset=Message.objects.all(),
-        required=False,
-        allow_null=True
-    )
-    replies = serializers.SerializerMethodField()
-    sent_timestamp = serializers.DateTimeField(source='timestamp', read_only=True)
-    received_timestamp = serializers.SerializerMethodField()
-    likes_count = serializers.IntegerField(read_only=True)  # New field
-    liked_by_me = serializers.SerializerMethodField()       # New field
-
-    class Meta:
-        model = Message
-        fields = ['id', 'sender', 'recipient', 'sender_id', 'recipient_id', 'content',
-                  'timestamp', 'sent_timestamp', 'received_timestamp', 'parent_message', 
-                  'replies', 'likes_count', 'liked_by_me']
-
-    def get_replies(self, obj):
-        replies = obj.replies.all().order_by('timestamp')
-        return MessageSerializer(replies, many=True).data
-
-    def get_received_timestamp(self, obj):
-        from datetime import timedelta
-        return obj.timestamp + timedelta(minutes=1)
-
-    def get_liked_by_me(self, obj):
-        user = self.context['request'].user if 'request' in self.context else None
-        if user and user.is_authenticated:
-            return obj.liked_by.filter(id=user.id).exists()
-        return False
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 

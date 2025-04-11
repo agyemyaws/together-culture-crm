@@ -21,7 +21,7 @@ const SendMembersList = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await fetchWithAuth("http://localhost:8000/auth/all-community-members/");
+        const response = await fetchWithAuth("http://localhost:8000/community/all-members/");
         if (!response.ok) {
           throw new Error("Failed to fetch members");
         }
@@ -76,7 +76,7 @@ const SendMembersList = () => {
     console.log("Sending message payload:", payload);
 
     try {
-      const response = await fetchWithAuth("http://localhost:8000/auth/messages/send/", {
+      const response = await fetchWithAuth("http://localhost:8000/community/messages/send/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

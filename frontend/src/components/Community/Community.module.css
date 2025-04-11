@@ -773,4 +773,15 @@
     width: 95%;
     max-height: 80vh;
   }
+}
+
+.highlightNew {
+  animation: highlightPulse 3s ease;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes highlightPulse {
+  0% { background-color: rgba(59, 130, 246, 0.2); }
+  50% { background-color: rgba(59, 130, 246, 0.3); }
+  100% { background-color: white; }
 } 
