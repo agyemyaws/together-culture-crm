@@ -1,3 +1,4 @@
+// Import necessary dependencies
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Authentication.module.css";
@@ -5,18 +6,22 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import { useUser } from "../../context/UserContext";
 
+// Sign In component definition
 const SignIn = () => {
+  // State for form data
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
 
+  // State for validation errors and submission status
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { updateUser } = useUser();
 
+  // Handle input field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -33,6 +38,7 @@ const SignIn = () => {
     }
   };
 
+  // Validate form inputs
   const validateForm = () => {
     const newErrors = {};
     
@@ -50,6 +56,7 @@ const SignIn = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Fetch user profile data after successful login
   const fetchUserProfile = async () => {
     try {
       const response = await api.get("/auth/profile/");
@@ -63,6 +70,7 @@ const SignIn = () => {
         interests = response.data.current_interests.map(interest => interest.interest_type);
       }
       
+      // Prepare user data object
       const userData = {
         id: response.data.id,
         fullName: response.data.full_name || response.data.username,
@@ -92,6 +100,7 @@ const SignIn = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -139,13 +148,16 @@ const SignIn = () => {
     }
   };
 
+  // Render the sign in form
   return (
     <div className={styles.formContainer}>
       <h1 className={styles.title}>Sign in</h1>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        {/* Display error messages */}
         {error && <p className={styles.errorText}>{error}</p>}
         
+        {/* Username input field */}
         <div className={styles.inputGroup}>
           <label htmlFor="username" className={styles.inputLabel}>
             Username
@@ -164,6 +176,7 @@ const SignIn = () => {
           )}
         </div>
 
+        {/* Password input field */}
         <div className={styles.inputGroup}>
           <label htmlFor="password" className={styles.inputLabel}>
             Password
@@ -185,6 +198,7 @@ const SignIn = () => {
           </Link>
         </div>
 
+        {/* Submit button */}
         <button
           type="submit"
           className={styles.submitButton}
@@ -193,6 +207,7 @@ const SignIn = () => {
           {isSubmitting ? "Signing In..." : "Sign In"}
         </button>
 
+        {/* Sign up link */}
         <div className={styles.signupPrompt}>
           Do not have an account?
           <Link to="/join" className={styles.textLink}>

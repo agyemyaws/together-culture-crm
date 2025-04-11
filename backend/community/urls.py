@@ -1,5 +1,5 @@
 from django.urls import path
-from authentication.views import (
+from .views import (
     CreateDiscussionView,
     CreateReplyView,
     DiscussionDetailView,
@@ -9,7 +9,11 @@ from authentication.views import (
     SendMessageView,
     GetMessagesView,
     LikeMessageView,
-    ForwardMessageView
+    ForwardMessageView,
+    CommunityMembersView,
+    RecentDiscussionsView,
+    AllCommunityMembersView,
+    CommunityMemberDetailView
 )
 
 urlpatterns = [
@@ -28,5 +32,8 @@ urlpatterns = [
     path('messages/<int:message_id>/forward/', ForwardMessageView.as_view(), name='forward-message'),
     
     # Community members
-    path('members/', GetMessagesView.as_view(), name='community-members'),
+    path('members/', CommunityMembersView.as_view(), name='community-members-preview'),
+    path('all-members/', AllCommunityMembersView.as_view(), name='all-community-members'),
+    path('members/<int:id>/', CommunityMemberDetailView.as_view(), name='community-member-detail'),
+    path('recent-discussions/', RecentDiscussionsView.as_view(), name='recent-discussions'),
 ] 

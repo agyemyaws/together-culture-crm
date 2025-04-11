@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 import datetime
 from django.conf import settings
 
-def send_email(recipient: str, subject: str = "Eduvate", message: str = None):
+def send_email(recipient: str, subject: str = "Together Culture", message: str = None):
     """Send an email using SMTP.
     
     Args:
@@ -127,7 +127,7 @@ def password_changed_email_template(first_name: str) -> str:
            <p>If you did not make this change, please contact our support team immediately.</p>
        </div>
        <div class="footer">
-           <p>&copy; {datetime.datetime.now().year} EduVate. All rights reserved.</p>
+           <p>&copy; {datetime.datetime.now().year} Together Culture. All rights reserved.</p>
        </div>
    </div>
 </body>
