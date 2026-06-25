@@ -188,18 +188,6 @@ Tested areas included:
 
 ---
 
-### 📊 Member Dashboard
-
-![Member Dashboard](assets/member-dashboard.png)
-
----
-
-### 👤 Profile Page
-
-![Profile Page](assets/profile-page.png)
-
----
-
 ### 🧾 Membership Request
 
 ![Membership Request](assets/membership-request.png)
@@ -215,12 +203,6 @@ Tested areas included:
 ### 🗄️ Database Design
 
 ![Database Design](assets/database-design.png)
-
----
-
-### 🔄 System Flow
-
-![System Flow](assets/system-flow.png)
 
 ---
 
